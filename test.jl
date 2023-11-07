@@ -21,7 +21,7 @@ long_angle_0 = BeadAngle(0.1, 0.0, 0.0)
 lat_angle_0 = BeadAngle(0.0, 0.2, 0.4)
 
 
-consts = LinSpringConst(1.0, 1.0, 1.2, a, 1.1*a, 0.95*a)
+consts = LinSpringConst(1.0, 1.0, 1.2, a, 1.2*a, 0.9*a)
 lattice = create_lattice(num_rings, a, δx; S=3, N=13)
 
 

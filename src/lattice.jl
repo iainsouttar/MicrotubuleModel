@@ -22,10 +22,8 @@ function create_lattice(num_rings, a, δx; S=3, N=13)
 
     for i in 1:num_rings
         for j in 1:N
-            lat, intra, long = neighbours((i-1)*N+j, num_rings*N)
-            if alpha==false
-                long, intra = intra, long
-            end
+            lat, (intra, long) = neighbours((i-1)*N+j, num_rings*N)
+            long, intra = alpha[j,i]==true ? (long, intra) : (intra, long)
             beads[(i-1)*N+j] = Bead(
                 positions[(i-1)*N+j], 
                 BeadAngle(0,0,angles[(i-1)*N+j]), 
@@ -37,14 +35,14 @@ function create_lattice(num_rings, a, δx; S=3, N=13)
     return beads
 end
 
-function lateral_nn(idx, total)
+function lateral_nn(idx, total)::Tuple{Int,Int}
     if idx % 13 == 0 
         if idx > total-2*13-1
             return (idx-1, 0)
         end
         return (idx-1, idx+1+2*13)
     elseif idx % 13 == 1
-        if idx < 2*26+1
+        if idx < 2*13+1
             return (0, idx+1)
         end
         return (idx-1-2*13, idx+1)
@@ -53,7 +51,7 @@ function lateral_nn(idx, total)
     return (idx-1, idx+1)
 end
 
-function long_nn(idx, total)
+function long_nn(idx, total)::Tuple{Int,Int}
     if idx<14
         return idx+13, 0
     elseif idx>total-13
@@ -63,37 +61,6 @@ function long_nn(idx, total)
     return idx+13, idx-13
 end
 
-# return lateral inter bonds, intradimer bond, longitudinal bond
 function neighbours(idx,total)
-    if idx == 1
-        return (idx+1, 0), idx+13, 0
-    elseif idx == total
-        return (idx-1, 0), 0, idx-13
-    end
-
-    if idx<14
-        if idx == 13
-            return (idx-1, idx+1+2*13), idx+13, 0
-        end
-        return (idx-1, idx+1), idx+13, 0
-    elseif idx>total-13
-        if idx == total-12
-            return (idx-1-2*13, idx+1), 0, idx-13
-        end
-        return (idx-1, idx+1), 0, idx-13
-    end
-
-    if idx % 13 == 0 
-        if idx > total-2*13-1
-            return (idx-1, 0), idx+13, idx-13
-        end
-        return (idx-1, idx+1+2*13), idx+13, idx-13
-    elseif idx % 13 == 1
-        if idx < 2*26+1
-            return (idx+1, 0), idx+13, idx-13
-        end
-        return (idx-1-2*13, idx+1), idx+13, idx-13
-    end
-    
-    return (idx-1, idx+1), idx+13, idx-13
+    return lateral_nn(idx, total), long_nn(idx, total)
 end
