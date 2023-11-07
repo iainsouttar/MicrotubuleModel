@@ -46,3 +46,19 @@ f = Figure()
 ax = Axis(f[1,1])
 lines!(ax, collect(1:50:steps), energy)
 f
+
+
+mutable struct Tst3
+    x::Int 
+    a::Union{Tst3,Nothing}
+end
+
+t = Tst3(5,nothing)
+
+a = Tst3(4,nothing)
+
+t.a = a
+
+a.x = 3
+
+t
