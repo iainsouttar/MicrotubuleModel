@@ -4,6 +4,10 @@ using StaticArrays
 using LinearAlgebra
 using Parameters
 using Base.Threads
+using Distributions
+using Random
+
+using GLMakie
 
 export 
     BeadPos,
@@ -12,9 +16,12 @@ export
     create_lattice,
     neighbours,
 
+    total_energy,
     LinSpringConst,
     iterate!,
-    bead_energy
+    iterateSDE!,
+
+    plot
 
 
 BeadPos = MVector{3, Float64}
@@ -36,5 +43,7 @@ end
 
 include("lattice.jl")
 include("forces.jl")
+include("sde.jl")
+include("visuals.jl")
 
 end

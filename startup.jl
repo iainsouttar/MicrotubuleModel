@@ -15,5 +15,5 @@ else
 end
 
 using ColorSchemes
-theme = include("theme.jl")
+theme = include("scripts/theme.jl")
 theme isa Attributes && set_theme!(theme)

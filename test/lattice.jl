@@ -18,8 +18,9 @@
     distances[distances .== 0] .= Inf
     setdiffs = 0
     for i in 1:Ntot
-        lat, long = neighbours(i, Ntot)
-        neigh = Set((lat...,long...))
+        lat, (intra,long) = neighbours(i, Ntot)
+        neigh = Set((lat...,intra,long))
+        delete!(neigh, 0)
         nn = Set(sortperm(distances[:,i])[1:4])
         setdiffs += length(setdiff(neigh,nn))
     end

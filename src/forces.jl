@@ -15,25 +15,15 @@ function linear_forces(b1, lattice, consts::LinSpringConst)
     F = MVector{3,Float64}(0,0,0)
     F += sum(spring_force(b1.x - lattice[b].x, l0_lat, k_lat) for b in lat if b != 0)
 
-    F += long == 0 ? zeros(3) : spring_force(b1.x - lattice[long].x, l0_long, k_long)
+    if long != 0
+        F += spring_force(b1.x - lattice[long].x, l0_long, k_long)
+    end
+    if intra != 0
+        F += spring_force(b1.x - lattice[intra].x, l0_intra, k_intra)
+    end
 
-    F += intra == 0 ? zeros(3) : spring_force(b1.x - lattice[intra].x, l0_intra, k_intra)
     return F
 end
-
-function linear_forces(b1, consts::LinSpringConst)
-    @unpack k_lat, k_long, k_intra, l0_lat, l0_long, l0_intra = consts
-    lat, long = b1.lat_nn, b1.long_nn
-    intra = b1.intra_nn
-    F = MVector{3,Float64}(0,0,0)
-    F += sum(spring_force(b1.x - lattice[b].x, l0_lat, k_lat) for b in lat if b != 0)
-
-    F += long == 0 ? zeros(3) : spring_force(b1.x - lattice[long].x, l0_long, k_long)
-
-    F += intra == 0 ? zeros(3) : spring_force(b1.x - lattice[intra].x, l0_intra, k_intra)
-    return F
-end
-
 
 function spring_force(r::BeadPos, l0::Real, k::Real)
     d = sqrt(dot(r,r))
@@ -47,13 +37,22 @@ function spring_energy(r, l0, k)
 end
 
 function bead_energy(b1, lattice, consts)
-    @unpack k_lat, k_long, l0_lat, l0_long = consts
-    lat, long = b1.lat_nn, b1.long_nn
+    @unpack k_lat, k_long, k_intra, l0_lat, l0_long, l0_intra = consts
+    lat = b1.lat_nn
+    long = b1.long_nn
+    intra = b1.intra_nn
     E = 0.0
     
     E += sum(spring_energy(b1.x - lattice[b].x, l0_long, k_long) for b in long if b != 0)
     E += sum(spring_energy(b1.x - lattice[b].x, l0_lat, k_lat) for b in lat  if b != 0)
+    E += long == 0 ? 0.0 : spring_energy(b1.x - lattice[long].x, l0_long, k_long)
+    E += intra == 0 ? 0.0 : spring_energy(b1.x - lattice[intra].x, l0_intra, k_intra)
+
     return E/2
+end
+
+function total_energy(lattice, consts::LinSpringConst)
+    return sum(bead_energy(b, lattice, consts) for (idx,b) in enumerate(lattice))
 end
 
 function iterate!(lattice, consts, dt; S=3, N=13)
