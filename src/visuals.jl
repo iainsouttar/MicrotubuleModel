@@ -7,7 +7,8 @@ end
 
 
 function GLMakie.plot!(scene, lattice; a=4.05)
-    COLORS = Dict(true => :blue, false => :red)
+    colors = colorschemes[:seaborn_bright].colors
+    COLORS = Dict(true => colors[5], false => colors[3])
 
     for bead in lattice
         s = Scene(scene, camera=scene.camera)

@@ -21,7 +21,10 @@ struct LatticePars
     δx::Float64
 end
 
-params = LatticePars(3, 13, 50, 4.05, 5.13)
+rings = 500
+a = 4.05
+
+params = LatticePars(3, 13, rings, a, 5.13)
 consts = LinSpringConst(1.0, 1.0, 1.2, a, 1.2*a, 0.9*a)
 
 function main(
@@ -29,7 +32,7 @@ function main(
     params::LatticePars,
     steps::Int,
     dt::Real;
-    kBT=0.01
+    kBT=0.005
 )
     @unpack num_rings, S, N, a, δx = params
     lattice = create_lattice(num_rings, a, δx; S=S, N=N)
@@ -59,7 +62,10 @@ cam3d!(scene)
 plot!(scene, lattice)
 scene
 
+save("initial-500-rings.png", scene, px_per_unit = 3.0)
 
+@unpack num_rings, S, N, a, δx = params
+lattice = create_lattice(num_rings, a, δx; S=S, N=N)
 
 f = Figure()
 ax = Axis(f[1,1])

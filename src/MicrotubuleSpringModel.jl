@@ -8,6 +8,7 @@ using Distributions
 using Random
 
 using GLMakie
+using ColorSchemes
 
 export 
     BeadPos,
