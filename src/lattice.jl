@@ -28,6 +28,7 @@ function create_lattice(num_rings, a, δx; S=3, N=13)
                 positions[(i-1)*N+j], 
                 BeadAngle(0,0,angles[(i-1)*N+j]), 
                 alpha[j,i], 
+                false,
                 lat, intra, long
                 )
         end

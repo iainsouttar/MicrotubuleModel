@@ -2,14 +2,17 @@
 struct LinSpringConst
     k_long::Float64
     k_lat::Float64
-    k_intra::Float64
+    k_in::Float64
+    k_in_kin::Float64
     l0_long::Float64
     l0_lat::Float64
-    l0_intra::Float64
+    l0_in::Float64
+    l0_in_kin::Float64
 end
 
 function linear_forces(b1, lattice, consts::LinSpringConst)
-    @unpack k_lat, k_long, k_intra, l0_lat, l0_long, l0_intra = consts
+    @unpack k_lat, k_long, k_in, k_in_kin = consts
+    @unpack l0_lat, l0_long, l0_in, l0_in_kin = consts
     lat, long = b1.lat_nn, b1.long_nn
     intra = b1.intra_nn
     F = MVector{3,Float64}(0,0,0)
@@ -19,7 +22,8 @@ function linear_forces(b1, lattice, consts::LinSpringConst)
         F += spring_force(b1.x - lattice[long].x, l0_long, k_long)
     end
     if intra != 0
-        F += spring_force(b1.x - lattice[intra].x, l0_intra, k_intra)
+        k, l0 = lattice[intra].kinesin == true ? (k_in_kin, l0_in_kin) : (k_in, l0_in)
+        F += spring_force(b1.x - lattice[intra].x, l0, k)
     end
 
     return F
@@ -37,7 +41,7 @@ function spring_energy(r, l0, k)
 end
 
 function bead_energy(b1, lattice, consts)
-    @unpack k_lat, k_long, k_intra, l0_lat, l0_long, l0_intra = consts
+    @unpack k_lat, k_long, k_in, l0_lat, l0_long, l0_in = consts
     lat = b1.lat_nn
     long = b1.long_nn
     intra = b1.intra_nn
@@ -46,7 +50,7 @@ function bead_energy(b1, lattice, consts)
     E += sum(spring_energy(b1.x - lattice[b].x, l0_long, k_long) for b in long if b != 0)
     E += sum(spring_energy(b1.x - lattice[b].x, l0_lat, k_lat) for b in lat  if b != 0)
     E += long == 0 ? 0.0 : spring_energy(b1.x - lattice[long].x, l0_long, k_long)
-    E += intra == 0 ? 0.0 : spring_energy(b1.x - lattice[intra].x, l0_intra, k_intra)
+    E += intra == 0 ? 0.0 : spring_energy(b1.x - lattice[intra].x, l0_in, k_in)
 
     return E/2
 end

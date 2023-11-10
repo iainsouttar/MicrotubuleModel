@@ -12,6 +12,8 @@ using Logging
 using LinearAlgebra
 using Distributions
 using Parameters
+using Colors
+using GLMakie
 
 struct LatticePars
     S::Int
@@ -21,11 +23,11 @@ struct LatticePars
     δx::Float64
 end
 
-rings = 500
+rings = 20
 a = 4.05
 
 params = LatticePars(3, 13, rings, a, 5.13)
-consts = LinSpringConst(1.0, 1.0, 1.2, a, 1.2*a, 0.9*a)
+consts = LinSpringConst(1.0, 1.0, 1.2, 1.5, a, 1.2*a, 0.9*a, 1.3*a)
 
 function main(
     consts::LinSpringConst,
@@ -36,6 +38,12 @@ function main(
 )
     @unpack num_rings, S, N, a, δx = params
     lattice = create_lattice(num_rings, a, δx; S=S, N=N)
+
+    for (i,b) in enumerate(lattice)
+        if i % 13 ∈ (4,5,6,7,8)
+            b.kinesin = true
+        end
+    end
 
     energy = zeros(Float64, steps÷50)
     dW = zeros((3,length(lattice)))
@@ -57,12 +65,15 @@ lat_angle_0 = BeadAngle(0.0, 0.2, 0.4)
 
 lattice, energy = main(consts, params, 10000, 0.01)
 
-scene = Scene(resolution=(1200,900))
+GLMakie.activate!(ssao=true)
+GLMakie.closeall() # close any open screen
+
+scene = Scene(resolution=(1200,900), backgroundcolor=colorant"#111111")
 cam3d!(scene)
 plot!(scene, lattice)
 scene
 
-save("initial-500-rings.png", scene, px_per_unit = 3.0)
+save("kinesin-buckling-2.png", scene, px_per_unit = 2)
 
 @unpack num_rings, S, N, a, δx = params
 lattice = create_lattice(num_rings, a, δx; S=S, N=N)
@@ -71,7 +82,6 @@ f = Figure()
 ax = Axis(f[1,1])
 lines!(ax, collect(1:50:steps), energy)
 f
-
 
 
 using GLMakie

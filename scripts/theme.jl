@@ -1,7 +1,7 @@
 Attributes(
     resolution=(1500,600),
     fontsize=30,
-    font="styles/monserrat.ttf",
+    font="monserrat",
     palette = (
         color = colorschemes[:seaborn_colorblind].colors,
         marker = [:rect, :circle, :utriangle, :diamond], 

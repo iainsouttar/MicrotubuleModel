@@ -34,9 +34,7 @@ mutable struct Bead
     x::BeadPos
     θ::BeadAngle
     α::Bool
-    # lat_nn::Tuple{Ref,Ref}
-    # long_nn::Ref
-    # intra_nn::Ref
+    kinesin::Bool
     lat_nn::Tuple{Int,Int}
     long_nn::Int
     intra_nn::Int
