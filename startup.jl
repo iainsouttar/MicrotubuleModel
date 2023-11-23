@@ -5,6 +5,18 @@ using ProgressMeter
 using CairoMakie
 using LaTeXStrings
 
+using StaticArrays
+using LinearAlgebra
+using LinearAlgebra: normalize, norm
+using Distributions
+using Colors
+using GLMakie
+using Configurations
+using Setfield
+
+using Quaternions
+using Quaternions: Quaternion
+
 #  VS Code workaround: https://github.com/julia-vscode/julia-vscode/issues/800
 if isdefined(@__MODULE__, :LanguageServer)
     @info "Using VS Code workaround..."

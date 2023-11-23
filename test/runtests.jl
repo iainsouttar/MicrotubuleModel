@@ -11,7 +11,8 @@ using Test
 using LinearAlgebra
 
 const tests = [
-    "lattice"
+    "lattice",
+    "orientation"
 ]
 
 
