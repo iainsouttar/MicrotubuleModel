@@ -46,13 +46,10 @@ end
 function eval_forces_and_torques!(F, torque, lattice, dirs, consts)
     M = lastindex(lattice)
     K = consts.K
-    s = [0.0,0.0,0.0]
     for i in 1:M
         F[:,i] = linear_forces(lattice[i], lattice, consts)
         torque[:,i] = angular_forces!(F, lattice[i], lattice, dirs[lattice[i].α], K)
-        s .+= torque[:,i]
     end
-    #@info s
 end
 
 
@@ -61,10 +58,9 @@ function update_pos_orientation!(lattice, F, torque, pars, N)
     dt_x = dt / (damp_x * mass)
     dt_θ = dt / (2 * damp_theta * moment_inertia)
     @threads for i in 1:lastindex(lattice)
-        if i > 3*N && i < lastindex(lattice) - 3*N
+        #if i > 3*N && i < lastindex(lattice) - 3*N
+        if i > N
             lattice[i].x .-= F[:,i] .* dt_x
-            #@info F[:, i]
-            #@info torque[:,i]
             q_τ = quat(0, torque[:,i]...)
             lattice[i].q = sign(lattice[i].q)
             lattice[i].q = lattice[i].q - q_τ * lattice[i].q .* dt_θ
@@ -95,21 +91,31 @@ end
 
 spring_energy(r, l0, k) = k/2*(norm(r)-l0)^2
 
-function bead_energy(b1, lattice, consts)
+function bead_energy(b1, lattice, dirs, consts)
     @unpack k_lat, k_long, k_in, l0_lat, l0_long, l0_in = consts
     lat = b1.lat_nn
     long = b1.long_nn
     intra = b1.intra_nn
     E = 0.0
     
-    E += sum(spring_energy(b1.x - lattice[b].x, l0_long, k_long) for b in long if b != 0)
+    #E += sum(spring_energy(b1.x - lattice[b].x, l0_long, k_long) for b in long if b != 0)
     E += sum(spring_energy(b1.x - lattice[b].x, l0_lat, k_lat) for b in lat  if b != 0)
     E += long == 0 ? 0.0 : spring_energy(b1.x - lattice[long].x, l0_long, k_long)
     E += intra == 0 ? 0.0 : spring_energy(b1.x - lattice[intra].x, l0_in, k_in)
 
+    bonds = [intra,lat[2],long, lat[1]]
+    for (bond, dir) in zip(bonds,eachcol(dirs))
+        if bond != 0
+            r = lattice[bond].x - b1.x
+            v = orientate_vector(dir, b1.q)
+            theta, _, _ = bond_angle(v, r)
+            E += consts.K*theta^2/2
+        end
+    end
+
     return E/2
 end
 
-function total_energy(lattice, consts::SpringConst)
-    return sum(bead_energy(b, lattice, consts) for (idx,b) in enumerate(lattice))
+function total_energy(lattice, dirs, consts::SpringConst)
+    return sum(bead_energy(b, lattice, dirs[b.α], consts) for (idx,b) in enumerate(lattice))
 end

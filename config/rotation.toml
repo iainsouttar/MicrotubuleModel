@@ -1,12 +1,12 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 20
+num_rings = 5
 a = 4.05
 dx = 5.13
 
 [iter_pars]
-dt = 0.001
+dt = 0.0002
 mass = 1.0
 moment_inertia = 1.0
 damp_x = 10.0

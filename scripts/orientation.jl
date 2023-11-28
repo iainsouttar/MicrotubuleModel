@@ -33,40 +33,32 @@ lattice, dirs = MicrotubuleSpringModel.initialise(conf)
 #     end
 # end
 
-Nt = 20_000
+Nt = 30_000
 s = zeros(Float64,(4,Nt))
+E = zeros(Nt)
 
 @showprogress for i in 1:Nt
     iterate!(lattice, conf, dirs)
-    for b in lattice 
-        lat, long = b.lat_nn, b.long_nn
-        intra = b.intra_nn
-        bonds = [intra,lat[2],long, lat[1]]
-        for (j,(bond,dir)) in enumerate(zip(bonds,eachcol(dirs[b.α])))
-            if bond != 0
-                v_ = MicrotubuleSpringModel.orientate_vector(dir, b.q)
-                θ, θ_hat, n_hat = MicrotubuleSpringModel.bond_angle(v_, lattice[bond].x - b.x)
-                s[j,i] += abs(θ)
-            end
+    E[i] = total_energy(lattice, dirs, conf.spring_consts)
+    # for b in lattice 
+    #     lat, long = b.lat_nn, b.long_nn
+    #     intra = b.intra_nn
+    #     bonds = [intra,lat[2],long, lat[1]]
+    #     for (j,(bond,dir)) in enumerate(zip(bonds,eachcol(dirs[b.α])))
+    #         if bond != 0
+    #             v_ = MicrotubuleSpringModel.orientate_vector(dir, b.q)
+    #             θ, θ_hat, n_hat = MicrotubuleSpringModel.bond_angle(v_, lattice[bond].x - b.x)
+    #             s[j,i] += abs(θ)
+    #         end
 
-        end
-    end
-
-    s[:,i] ./= lastindex(lattice)
+    #     end
+    # end
+    #s[:,i] ./= lastindex(lattice)
 end
 
 GLMakie.activate!()
 GLMakie.closeall()
 scene = plot(lattice, dirs)
-idx = 7*13+5
-lat = lattice[idx].lat_nn
-long = lattice[idx].long_nn
-intra = lattice[idx].intra_nn
-s = Scene(scene, camera=scene.camera)
-lat_plots = [mesh!(s, Sphere(Point3f(lattice[b].x), a/2), color=:black) for b in lat if b!=0]
-long_plots = long==0 ? Nothing : mesh!(s, Sphere(Point3f(lattice[long].x), a/2), color=:yellow)
-long_plots = intra==0 ? Nothing : mesh!(s, Sphere(Point3f(lattice[intra].x), a/2), color=:purple)
-mesh!(s, Sphere(Point3f(lattice[idx].x), a/2), color=:pink)
 scene
 
 F = zeros(Float64, (3, lastindex(lattice)))
@@ -74,6 +66,7 @@ torque = similar(F)
 
 MicrotubuleSpringModel.eval_forces_and_torques!(F, torque, lattice, dirs, conf.spring_consts)
 
+GLMakie.activate!()
 GLMakie.closeall()
 scene = plot(lattice, dirs)
 
@@ -130,5 +123,13 @@ CairoMakie.activate!()
 f = Figure()
 ax = Axis(f[1,1])
 series!(ax,collect(1:Nt),s)
+xlims!(0,Nt)
+f
+
+
+CairoMakie.activate!()
+f = Figure()
+ax = Axis(f[1,1])
+lines!(ax,collect(1:Nt),E)
 xlims!(0,Nt)
 f

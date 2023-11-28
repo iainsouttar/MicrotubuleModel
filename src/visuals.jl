@@ -38,14 +38,9 @@ function GLMakie.plot!(scene, lattice::Vector{Bead}; a=4.05)
 end
 
 function GLMakie.plot!(scene, lattice::Vector{Bead}, dirs; a=4.05, l=4.0)
-    #s = Scene(scene, camera=scene.camera)
-
     c = [NATURE.colors[3],NATURE.colors[4],NATURE.colors[5],NATURE.colors[6]]
 
     for b in lattice
-        # vecs_ = [MicrotubuleSpringModel.transform_orientation(v,b.q) for v in eachcol(dirs[b.α])]
-        # vs = Vector{Vec{3, Float32}}([l*normalize([imag_part(v)...]) for v in vecs_])
-        # arrs = arrows!(scene, repeat([Point3f(b.x)],4), vs, linewidth=0.1, color=:white)
         for (i,bond) in enumerate(eachcol(dirs[b.α]))
             v = MicrotubuleSpringModel.transform_orientation(bond,b.q)
             v_ = l*normalize([imag_part(v)...])
