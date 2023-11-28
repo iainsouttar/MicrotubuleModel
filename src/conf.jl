@@ -49,6 +49,9 @@ end
     west::SVector{2,Float64} = [π-π/13,π/2+0.1819]
 end
 
+"""
+Full lattice and simulation parameters
+"""
 @option "rotation" struct RotationConfig
     lattice::LatticePars
     alpha::AlphaConfirm = AlphaConfirm()
@@ -57,6 +60,9 @@ end
     spring_consts::SpringConst
 end
 
+"""
+Parameters for a patch of a lattice e.g. 5x5 grid 
+"""
 @option "patch conf" struct PatchConfig
     lattice::LatticePatchPars
     alpha::AlphaConfirm = AlphaConfirm()

@@ -18,7 +18,6 @@ function GLMakie.plot(lattice::Vector{Bead}; a=4.05)
 end
 
 function GLMakie.plot(lattice::Vector{Bead}, dirs; a=4.05, l=4.0)
-    @info "here"
     scene = Scene(resolution=(1200,900), backgroundcolor=colorant"#111111")
     cam3d!(scene)
     plot!(scene, lattice, dirs; a=a, l=l)
@@ -39,16 +38,23 @@ function GLMakie.plot!(scene, lattice::Vector{Bead}; a=4.05)
 end
 
 function GLMakie.plot!(scene, lattice::Vector{Bead}, dirs; a=4.05, l=4.0)
-    s = Scene(scene, camera=scene.camera)
+    #s = Scene(scene, camera=scene.camera)
+
+    c = [NATURE.colors[3],NATURE.colors[4],NATURE.colors[5],NATURE.colors[6]]
 
     for b in lattice
-        vecs_ = [MicrotubuleSpringModel.transform_orientation(v,b.q) for v in eachcol(dirs[b.α])]
-        vs = Vector{Vec{3, Float32}}([l*normalize([imag_part(v)...]) for v in vecs_])
-        arrs = arrows!(scene, repeat([Point3f(b.x)],4), vs, linewidth=0.1, color=:white)
+        # vecs_ = [MicrotubuleSpringModel.transform_orientation(v,b.q) for v in eachcol(dirs[b.α])]
+        # vs = Vector{Vec{3, Float32}}([l*normalize([imag_part(v)...]) for v in vecs_])
+        # arrs = arrows!(scene, repeat([Point3f(b.x)],4), vs, linewidth=0.1, color=:white)
+        for (i,bond) in enumerate(eachcol(dirs[b.α]))
+            v = MicrotubuleSpringModel.transform_orientation(bond,b.q)
+            v_ = l*normalize([imag_part(v)...])
+            arrows!(scene, [Point3f(b.x)], Vector{Vec{3, Float32}}([v_]), linewidth=0.2, color=c[i], arrowsize=0.3)
+        end
     end
 
     for b in lattice
-        mesh!(s, Sphere(Point3f(b.x), a/4), color=COLORS[(b.α, b.kinesin)], shininess=32.0)
+        mesh!(scene, Sphere(Point3f(b.x), a/4), color=COLORS[(b.α, b.kinesin)], shininess=32.0)
     end
 
     GLMakie.scale!(scene, 0.05, 0.05, 0.05)

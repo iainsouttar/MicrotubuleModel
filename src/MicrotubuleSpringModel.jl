@@ -58,11 +58,17 @@ end
 include("conf.jl")
 include("lattice.jl")
 include("forces.jl")
+include("transformations.jl")
 include("orientation.jl")
 include("sde.jl")
 include("visuals.jl")
 
-function initialise(conf::RotationConfig)
+"""
+    initialise(conf)::Tuple{Vector{Bead}, Dict{Bool,BondDirec}}
+
+    Initialise the lattice and construct the bond directions
+"""
+function initialise(conf::RotationConfig)::Tuple{Vector{Bead}, Dict{Bool,SMatrix{3,4, Float64}}} 
     @unpack num_rings, S, N, a, dx = conf.lattice
     lattice = create_lattice(num_rings, a, dx; S=S, N=N)
 

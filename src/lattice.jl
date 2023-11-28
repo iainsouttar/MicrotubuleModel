@@ -1,4 +1,9 @@
-function set_pos(θ, idx, R, r; θ_0=0.0, z_0=0.0, N=13)
+"""
+    set_pos(θ::Real, idx::Int, R::Real, r::Real; θ_0=0.0, z_0=0.0, N=13)::BeadPos
+
+Set position of the bead in a lattice.
+"""
+function set_pos(θ::Real, idx::Int, R::Real, r::Real; θ_0=0.0, z_0=0.0, N=13)::BeadPos
     return BeadPos(
         R*cos(θ_0+θ),
         R*sin(θ_0+θ),
@@ -6,7 +11,21 @@ function set_pos(θ, idx, R, r; θ_0=0.0, z_0=0.0, N=13)
     )
 end
 
-function create_patch(N_lat, N_long, a, δx; S=3, N=13)
+"""
+    create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::Int=13)
+
+Construct a lattice of beads connected by springs.
+
+# Arguments
+- `N_lat::Int`: number of beads laterally
+- `N_long::Int`: number of beads in protofilaments
+- `a::Real`: intial separation along protofilament
+- `δx::Real`: initial separation laterally
+
+# Returns
+- `Vector{Bead}`: lattice of connected beads
+"""
+function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::Int=13)
     beads = Vector{Bead}(undef,N_lat*N_long)
 
     r = S*a/N
@@ -26,7 +45,7 @@ function create_patch(N_lat, N_long, a, δx; S=3, N=13)
                 lat = lateral_nn_patch((i-1)*N_lat+j, N_lat)
                 (intra, long) = long_nn_patch((i-1)*N_lat+j, N_lat, N_long)
             end
-            long, intra = alpha[j,i]==true ? (long, intra) : (intra, long)
+            #long, intra = alpha[j,i]==true ? (long, intra) : (intra, long)
 
             q = quat_from_axisangle([0,0,1],-π/2-angles[(i-1)*N_lat+j])
             beads[(i-1)*N_lat+j] = Bead(
@@ -34,16 +53,36 @@ function create_patch(N_lat, N_long, a, δx; S=3, N=13)
                 q,
                 alpha[j,i], 
                 false,
-                lat, intra, long
+                lat, long, intra
             )
         end
     end
     return beads
 end
 
-create_lattice(num_rings, a, δx; S=3, N=13) = create_patch(N, num_rings, a, δx; S=S, N=N)
 
-function lateral_nn(idx, total)::Tuple{Int,Int}
+"""
+    create_lattice(num_rings::Int, a::Real, δx::Real; S=3, N=13)
+
+Construct a full lattice of beads connected by springs.
+
+# Arguments
+- `num_rings::Int`: number of beads laterally
+- `a::Real`: intial separation along protofilament
+- `δx::Real`: initial separation laterally
+
+# Returns
+- `Vector{Bead}`: lattice of connected beads
+"""
+create_lattice(num_rings, a, δx; S::Int=3, N::Int=13) = create_patch(N, num_rings, a, δx; S=S, N=N)
+
+
+"""
+    lateral_nn(idx::Int, total::Int)::Tuple{Int,Int}
+
+Return neighbours in the lateral direction for bead `idx` of `total`
+"""
+function lateral_nn(idx::Int, total::Int)::Tuple{Int,Int}
     if idx % 13 == 0 
         if idx > total-2*13-1
             return (idx-1, 0)
@@ -58,7 +97,12 @@ function lateral_nn(idx, total)::Tuple{Int,Int}
     return (idx-1, idx+1)
 end
 
-function long_nn(idx, total)::Tuple{Int,Int}
+"""
+    lateral_nn(idx::Int, total::Int)::Tuple{Int,Int}
+
+Return neighbours in the longitudinal direction for bead `idx` of `total`
+"""
+function long_nn(idx::Int, total::Int)::Tuple{Int,Int}
     if idx<14
         return idx+13, 0
     elseif idx>total-13
@@ -67,8 +111,12 @@ function long_nn(idx, total)::Tuple{Int,Int}
     return idx+13, idx-13
 end
 
+"""
+    lateral_nn(idx::Int, total::Int)::Tuple{Int,Int}
 
-function lateral_nn_patch(idx, N_lat)::Tuple{Int,Int}
+Return neighbours in the lateral direction for bead `idx` of `total` in a patch
+"""
+function lateral_nn_patch(idx::Int, N_lat::Int)::Tuple{Int,Int}
     if idx % N_lat == 0 
         return (idx-1, 0)
     elseif idx % N_lat == 1
@@ -77,7 +125,13 @@ function lateral_nn_patch(idx, N_lat)::Tuple{Int,Int}
     return (idx-1, idx+1)
 end
 
-function long_nn_patch(idx, N_lat, N_long)::Tuple{Int,Int}
+
+"""
+    long_nn_patch(idx::Int, N_lat::Int, N_long::Int)::Tuple{Int,Int}
+
+Return neighbours in the long direction for bead `idx` of `total` in a patch
+"""
+function long_nn_patch(idx::Int, N_lat::Int, N_long::Int)::Tuple{Int,Int}
     if idx<N_lat+1
         return idx+N_lat, 0
     elseif idx>N_lat*(N_long-1)
@@ -86,7 +140,13 @@ function long_nn_patch(idx, N_lat, N_long)::Tuple{Int,Int}
     return idx+N_lat, idx-N_lat
 end
 
-function neighbours(idx,total)
+
+"""
+    neighbours(idx::Int, total::Int)
+
+Return neighbours in the lateral and longitudinal direction for bead `idx` of `total`
+"""
+function neighbours(idx::Int, total::Int)::Tuple{Tuple{Int,Int}, Tuple{Int, Int}}
     return lateral_nn(idx, total), long_nn(idx, total)
 end
 
@@ -96,7 +156,7 @@ function set_bond_angles(conf)
     r = S*a/N
     R = N*dx/2π
     l = 2*R*sin(π/N)
-    ϕ = atan(r,l)
+    ϕ = atan(r,l) + 0.2
 
     conf = @set conf.alpha = MicrotubuleSpringModel.AlphaConfirm(
         [π/2, -0.2],

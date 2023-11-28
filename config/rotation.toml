@@ -1,7 +1,7 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 5
+num_rings = 20
 a = 4.05
 dx = 5.13
 

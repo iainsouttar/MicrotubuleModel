@@ -4,10 +4,17 @@ using GLMakie
 
 GLMakie.activate!()
 
+conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/rotation.toml")
 
-lattice = create_lattice(7, a, δx; S=3, N=13)
-scene = plot_lattice(lattice)
+conf = set_bond_angles(conf)
 
+lattice, dirs = MicrotubuleSpringModel.initialise(conf)
+
+GLMakie.activate!()
+GLMakie.closeall()
+scene = plot(lattice)
+
+a = 2.55
 idx = 3*13+7
 lat = lattice[idx].lat_nn
 long = lattice[idx].long_nn
@@ -38,7 +45,6 @@ meshscatter!(ax, positions, marker=box, markersize=1, color=:lightblue, ssao=tru
 fig
 
 radiance = 50000
-# Note, that only RPRMakie supports `EnvironmentLight` so far
 lights = [
     PointLight(Vec3f(50, 0, 200), RGBf(radiance, radiance, radiance*1.1)),
 ]

@@ -1,6 +1,10 @@
 
+"""
+    linear_forces(b1::Bead, lattice::Vector{Bead}, consts::SpringConst)::MVector{3,Float64}
 
-function linear_forces(b1, lattice, consts::SpringConst)
+Calculate 3D force acting on bead `b1` due to the linear spring attaching its neighbours.
+"""
+function linear_forces(b1::Bead, lattice::Vector{Bead}, consts::SpringConst)::MVector{3,Float64}
     @unpack k_lat, k_long, k_in, k_in_kin = consts
     @unpack l0_lat, l0_long, l0_in, l0_in_kin = consts
     lat, long = b1.lat_nn, b1.long_nn
@@ -19,37 +23,56 @@ function linear_forces(b1, lattice, consts::SpringConst)
     return F
 end
 
+"""
+    spring_force(r::BeadPos, l0::Real, k::Real)
+
+Return force due to displacement r of a spring
+
+# Arguments
+- `r::BeadPos`: 3D displacement vector
+- `l0::Real`: rest length of spring
+- `k::Real`: spring stiffness
+
+# Returns
+- `MVector{3, Float64}`: directed force
+"""
 function spring_force(r::BeadPos, l0::Real, k::Real)
     d = norm(r)
     @fastmath ΔL = d - l0
     return (k*ΔL/d) .* r
 end
 
-function eval_forces_and_toques!(F, torque, lattice, dirs, consts)
+
+function eval_forces_and_torques!(F, torque, lattice, dirs, consts)
     M = lastindex(lattice)
     K = consts.K
     s = [0.0,0.0,0.0]
     for i in 1:M
         F[:,i] = linear_forces(lattice[i], lattice, consts)
-        s .+= F[:,i]
         torque[:,i] = angular_forces!(F, lattice[i], lattice, dirs[lattice[i].α], K)
+        s .+= torque[:,i]
     end
+    #@info s
 end
+
 
 function update_pos_orientation!(lattice, F, torque, pars, N)
     @unpack damp_x, damp_theta, dt, mass, moment_inertia = pars
     dt_x = dt / (damp_x * mass)
     dt_θ = dt / (2 * damp_theta * moment_inertia)
     @threads for i in 1:lastindex(lattice)
-        if i > N
+        if i > 3*N && i < lastindex(lattice) - 3*N
             lattice[i].x .-= F[:,i] .* dt_x
+            #@info F[:, i]
+            #@info torque[:,i]
             q_τ = quat(0, torque[:,i]...)
             lattice[i].q = sign(lattice[i].q)
-            lattice[i].q = lattice[i].q + q_τ * lattice[i].q .* dt_θ
+            lattice[i].q = lattice[i].q - q_τ * lattice[i].q .* dt_θ
         end
         lattice[i].q = sign(lattice[i].q)
     end
 end
+
 
 function iterate!(lattice, conf, dirs)
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
@@ -57,7 +80,7 @@ function iterate!(lattice, conf, dirs)
     F = zeros(Float64, (3, lastindex(lattice)))
     torque = similar(F)
 
-    eval_forces_and_toques!(F, torque, lattice, dirs, conf.spring_consts)
+    eval_forces_and_torques!(F, torque, lattice, dirs, conf.spring_consts)
 
     update_pos_orientation!(lattice, F, torque, conf.iter_pars, N)
 end
