@@ -1,7 +1,7 @@
 [lattice]
 S = 3
 N = 13
-N_lat = 11
+N_lat = 5
 N_long = 5
 a = 4.05
 dx = 5.13

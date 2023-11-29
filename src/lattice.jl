@@ -40,10 +40,10 @@ function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::
     for i in 1:N_long
         for j in 1:N_lat
             if N_lat==N
-                lat, (intra, long) = neighbours((i-1)*N_lat+j, N_long*N_lat)
+                lat, (north, south) = neighbours((i-1)*N_lat+j, N_long*N_lat)
             else
                 lat = lateral_nn_patch((i-1)*N_lat+j, N_lat)
-                (intra, long) = long_nn_patch((i-1)*N_lat+j, N_lat, N_long)
+                (north, south) = long_nn_patch((i-1)*N_lat+j, N_lat, N_long)
             end
             #long, intra = alpha[j,i]==true ? (long, intra) : (intra, long)
 
@@ -53,7 +53,7 @@ function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::
                 q,
                 alpha[j,i], 
                 false,
-                lat, long, intra
+                lat, south, north
             )
         end
     end

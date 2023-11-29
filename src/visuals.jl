@@ -26,10 +26,8 @@ end
 
 
 function GLMakie.plot!(scene, lattice::Vector{Bead}; a=4.05)
-    s = Scene(scene, camera=scene.camera)
-
     for b in lattice
-        mesh!(s, Sphere(Point3f(b.x), a/4), color=COLORS[(b.α, b.kinesin)], shininess=32.0)
+        mesh!(scene, Sphere(Point3f(b.x), a/4), color=COLORS[(b.α, b.kinesin)], shininess=32.0)
     end
 
     GLMakie.scale!(scene, 0.05, 0.05, 0.05)
@@ -48,11 +46,6 @@ function GLMakie.plot!(scene, lattice::Vector{Bead}, dirs; a=4.05, l=4.0)
         end
     end
 
-    for b in lattice
-        mesh!(scene, Sphere(Point3f(b.x), a/4), color=COLORS[(b.α, b.kinesin)], shininess=32.0)
-    end
-
-    GLMakie.scale!(scene, 0.05, 0.05, 0.05)
-    center!(scene)
+    plot!(scene, lattice; a=a)
     return scene
 end

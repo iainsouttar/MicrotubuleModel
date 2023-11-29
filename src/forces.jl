@@ -44,9 +44,8 @@ end
 
 
 function eval_forces_and_torques!(F, torque, lattice, dirs, consts)
-    M = lastindex(lattice)
     K = consts.K
-    for i in 1:M
+    for i in 1:lastindex(lattice)
         F[:,i] = linear_forces(lattice[i], lattice, consts)
         torque[:,i] = angular_forces!(F, lattice[i], lattice, dirs[lattice[i].α], K)
     end
@@ -56,17 +55,24 @@ end
 function update_pos_orientation!(lattice, F, torque, pars, N)
     @unpack damp_x, damp_theta, dt, mass, moment_inertia = pars
     dt_x = dt / (damp_x * mass)
-    dt_θ = dt / (2 * damp_theta * moment_inertia)
-    @threads for i in 1:lastindex(lattice)
-        #if i > 3*N && i < lastindex(lattice) - 3*N
-        if i > N
-            lattice[i].x .-= F[:,i] .* dt_x
-            q_τ = quat(0, torque[:,i]...)
-            lattice[i].q = sign(lattice[i].q)
-            lattice[i].q = lattice[i].q - q_τ * lattice[i].q .* dt_θ
+    dt_θ = dt / (damp_theta * moment_inertia)
+    for i in 1:lastindex(lattice)
+        #if i > N && i < lastindex(lattice) - N && i%N != 0 && i%N != 1
+        if i > 0
+            step!(lattice[i], F[:,i], torque[:,i], dt_x, dt_θ)
         end
-        lattice[i].q = sign(lattice[i].q)
     end
+end
+
+@inline function step!(b, F, τ, dt_x, dt_θ)
+    b.x .-= F * dt_x
+    
+    q = sign(b.q)
+    q_τ = quat(0, τ...)
+    #spin = 0.5* q_τ * q
+    spin = 0.5 * q * q_τ
+    b.q = q + spin * dt_θ
+    return spin
 end
 
 

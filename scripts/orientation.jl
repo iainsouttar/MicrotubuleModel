@@ -33,7 +33,7 @@ lattice, dirs = MicrotubuleSpringModel.initialise(conf)
 #     end
 # end
 
-Nt = 30_000
+Nt = 20000
 s = zeros(Float64,(4,Nt))
 E = zeros(Nt)
 
@@ -61,6 +61,8 @@ GLMakie.closeall()
 scene = plot(lattice, dirs)
 scene
 
+############################################################
+
 F = zeros(Float64, (3, lastindex(lattice)))
 torque = similar(F)
 
@@ -71,7 +73,7 @@ GLMakie.closeall()
 scene = plot(lattice, dirs)
 
 xs = [Point3f(b.x) for b in lattice]
-vs = Vector{Vec{3, Float32}}([5*t for t in eachcol(torque)])
+vs = Vector{Vec{3, Float32}}([10*t for t in eachcol(torque)])
 arrows!(scene, xs, vs, linewidth=0.3, arrowsize=0.5, color=:white)
 
 
@@ -129,7 +131,7 @@ f
 
 CairoMakie.activate!()
 f = Figure()
-ax = Axis(f[1,1])
+ax = Axis(f[1,1], xlabel="Iteration number", ylabel="Total Energy")
 lines!(ax,collect(1:Nt),E)
 xlims!(0,Nt)
 f

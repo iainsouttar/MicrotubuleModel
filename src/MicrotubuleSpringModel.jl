@@ -26,6 +26,9 @@ export
     total_energy,
     LinSpringConst,
 
+    quat_from_axisangle,
+    orientate_vector,
+
     BondAngle,
     BondDirec,
     torque_and_force,

@@ -1,16 +1,16 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 5
+num_rings = 20
 a = 4.05
 dx = 5.13
 
 [iter_pars]
-dt = 0.0002
+dt = 0.001
 mass = 1.0
 moment_inertia = 1.0
 damp_x = 10.0
-damp_theta = 10.0
+damp_theta = 50.0
 
 [spring_consts]
 K = 1.0

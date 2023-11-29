@@ -12,7 +12,7 @@ Attributes(
     markersize=25,
     strokewidth=1.5,
     strokecolor="#DD8452",
-    colormap=[:white, "#4C72B0"],
+    colormap=:viridis,
     Lines = (color = "#4C72B0", linewidth=3),
     Scatter = (color="#55A868", marker='◯', markersize=15, strokewidth=1.5, strokecolor="#55A868"),
     grid=false,
