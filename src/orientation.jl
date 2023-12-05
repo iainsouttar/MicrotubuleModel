@@ -1,26 +1,23 @@
 
 
-function bond_angle(v, r)
+@inline function bond_angle(v, r)
     rhat = normalize(r)
-    rdotv = LinearAlgebra.dot(rhat,v)
-    if isapprox(abs(rdotv), 1.0, atol=1e-8)
-        return 0.0, [NaN,NaN,NaN], [NaN,NaN,NaN]
-    end
+    rdotv = min(1.0,dot(rhat,v))
     thetahat = normalize(v - rdotv*rhat)
     theta = acos(rdotv)
-    nhat = normalize(cross(r, v))
+    nhat = cross(thetahat, v)
 
     return theta, thetahat, nhat
 end
 
 
-function torque_and_force(v, r, K)
+@inline function torque_and_force(v, r, K)
     θ, θ_hat, n_hat = bond_angle(v, r)
-    if all(isnan, θ_hat)
+    if iszero(θ)
         return zeros(3), zeros(3)
     end
-    torque = K*θ*n_hat
-    force = -K*θ/norm(r)*θ_hat
+    @fastmath torque = K*θ*n_hat
+    @fastmath force = -K*θ/norm(r)*θ_hat
     return torque, force
 end
 
@@ -35,7 +32,7 @@ function angular_forces!(F, b1, lattice, dirs, K)
         if bond != 0
             # transform bond direction according to bead orientation
             v = orientate_vector(dir, b1.q)
-            r = lattice[bond].x - b1.x
+            @fastmath r = lattice[bond].x - b1.x
             # torque from diff between rest direction v and actual r
             τ, F_ = torque_and_force(v, r, K)
             F[:,bond] += F_

@@ -157,9 +157,10 @@ function set_bond_angles(conf)
     R = N*dx/2π
     l = 2*R*sin(π/N)
     ϕ = atan(r,l)
+    δ = 0.2
 
     conf = @set conf.alpha = MicrotubuleSpringModel.AlphaConfirm(
-        [π/2, -0.2],
+        [π/2, -δ],
         [π/13, π/2-ϕ],
         [π/2, π],
         [π-π/13,π/2+ϕ]
@@ -167,7 +168,7 @@ function set_bond_angles(conf)
     conf = @set conf.beta = MicrotubuleSpringModel.BetaConfirm(
         [π/2, 0],
         [π/13, π/2-ϕ],
-        [π/2, π+0.2],
+        [π/2, π+δ],
         [π-π/13,π/2+ϕ]
     )
     return conf

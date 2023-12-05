@@ -28,7 +28,7 @@ conf = set_bond_angles(conf)
 lattice, dirs = MicrotubuleSpringModel.initialise(conf)
 
 # for (i,b) in enumerate(lattice)
-#     if i % 13 ∈ (4,5,6,7,8)
+#     if i % 13 ∈ (4,5,6,7,8,9,10,11)
 #         b.kinesin = true
 #     end
 # end
@@ -40,25 +40,11 @@ E = zeros(Nt)
 @showprogress for i in 1:Nt
     iterate!(lattice, conf, dirs)
     E[i] = total_energy(lattice, dirs, conf.spring_consts)
-    # for b in lattice 
-    #     lat, long = b.lat_nn, b.long_nn
-    #     intra = b.intra_nn
-    #     bonds = [intra,lat[2],long, lat[1]]
-    #     for (j,(bond,dir)) in enumerate(zip(bonds,eachcol(dirs[b.α])))
-    #         if bond != 0
-    #             v_ = MicrotubuleSpringModel.orientate_vector(dir, b.q)
-    #             θ, θ_hat, n_hat = MicrotubuleSpringModel.bond_angle(v_, lattice[bond].x - b.x)
-    #             s[j,i] += abs(θ)
-    #         end
-
-    #     end
-    # end
-    #s[:,i] ./= lastindex(lattice)
 end
 
 GLMakie.activate!()
 GLMakie.closeall()
-scene = plot(lattice, dirs)
+scene = plot(lattice)
 scene
 
 ############################################################

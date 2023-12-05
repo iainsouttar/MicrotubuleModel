@@ -33,10 +33,10 @@ end
 
 function transform_orientation(v::BondDirec, q::Quaternions.Quaternion)
     v_ = quat(0,v...)
-    return conj(q) * v_ * q
+    return @fastmath conj(q) * v_ * q
 end
 
 function orientate_vector(v::BondDirec, q::Quaternions.Quaternion)
     q_prime = transform_orientation(v, q)
-    return LinearAlgebra.normalize(BondDirec(imag_part(q_prime)))
+    return @fastmath LinearAlgebra.normalize(BondDirec(imag_part(q_prime)))
 end

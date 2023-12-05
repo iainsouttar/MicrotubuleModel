@@ -10,7 +10,7 @@ COLORS = Dict(
     (false, true) => NATURE.colors[4]
 )
 
-function GLMakie.plot(lattice::Vector{Bead}; a=4.05)
+function GLMakie.plot(lattice::Vector{Bead}; a=8.05)
     scene = Scene(resolution=(1200,900), backgroundcolor=colorant"#111111")
     cam3d!(scene)
     plot!(scene, lattice; a=a)
@@ -25,7 +25,7 @@ function GLMakie.plot(lattice::Vector{Bead}, dirs; a=4.05, l=4.0)
 end
 
 
-function GLMakie.plot!(scene, lattice::Vector{Bead}; a=4.05)
+function GLMakie.plot!(scene, lattice::Vector{Bead}; a=8.05)
     for b in lattice
         mesh!(scene, Sphere(Point3f(b.x), a/4), color=COLORS[(b.α, b.kinesin)], shininess=32.0)
     end

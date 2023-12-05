@@ -36,30 +36,29 @@ Return force due to displacement r of a spring
 # Returns
 - `MVector{3, Float64}`: directed force
 """
-function spring_force(r::BeadPos, l0::Real, k::Real)
-    d = norm(r)
+@inline function spring_force(r::BeadPos, l0::Real, k::Real)
+    @fastmath d = norm(r)
     @fastmath ΔL = d - l0
-    return (k*ΔL/d) .* r
+    return @fastmath (k*ΔL/d) .* r
 end
 
 
-function eval_forces_and_torques!(F, torque, lattice, dirs, consts)
+@inline function eval_forces_and_torques!(F, torque, lattice, dirs, consts)
     K = consts.K
-    for i in 1:lastindex(lattice)
+    @threads for i in 1:lastindex(lattice)
         F[:,i] = linear_forces(lattice[i], lattice, consts)
         torque[:,i] = angular_forces!(F, lattice[i], lattice, dirs[lattice[i].α], K)
     end
 end
 
 
-function update_pos_orientation!(lattice, F, torque, pars, N)
+@inline function update_pos_orientation!(lattice, F, torque, pars, N)
     @unpack damp_x, damp_theta, dt, mass, moment_inertia = pars
     dt_x = dt / (damp_x * mass)
     dt_θ = dt / (damp_theta * moment_inertia)
-    for i in 1:lastindex(lattice)
-        #if i > N && i < lastindex(lattice) - N && i%N != 0 && i%N != 1
-        if i > 0
-            step!(lattice[i], F[:,i], torque[:,i], dt_x, dt_θ)
+    @threads for i in 1:lastindex(lattice)
+        if i > N
+            @fastmath step!(lattice[i], F[:,i], torque[:,i], dt_x, dt_θ)
         end
     end
 end
@@ -95,19 +94,20 @@ end
 
 
 
-spring_energy(r, l0, k) = k/2*(norm(r)-l0)^2
+@inline spring_energy(r, l0, k) = k/2*(norm(r)-l0)^2
 
 function bead_energy(b1, lattice, dirs, consts)
     @unpack k_lat, k_long, k_in, l0_lat, l0_long, l0_in = consts
+    @unpack l0_in_kin, k_in_kin = consts
     lat = b1.lat_nn
     long = b1.long_nn
     intra = b1.intra_nn
+    (k_intra, l0_intra) = b1.kinesin ? (k_in_kin, l0_in_kin) : (k_in, k_in_kin)
     E = 0.0
     
-    #E += sum(spring_energy(b1.x - lattice[b].x, l0_long, k_long) for b in long if b != 0)
     E += sum(spring_energy(b1.x - lattice[b].x, l0_lat, k_lat) for b in lat  if b != 0)
     E += long == 0 ? 0.0 : spring_energy(b1.x - lattice[long].x, l0_long, k_long)
-    E += intra == 0 ? 0.0 : spring_energy(b1.x - lattice[intra].x, l0_in, k_in)
+    E += intra == 0 ? 0.0 : spring_energy(b1.x - lattice[intra].x, l0_intra, k_intra)
 
     bonds = [intra,lat[2],long, lat[1]]
     for (bond, dir) in zip(bonds,eachcol(dirs))
@@ -115,7 +115,7 @@ function bead_energy(b1, lattice, dirs, consts)
             r = lattice[bond].x - b1.x
             v = orientate_vector(dir, b1.q)
             theta, _, _ = bond_angle(v, r)
-            E += consts.K*theta^2/2
+            E += consts.K*theta^2
         end
     end
 
