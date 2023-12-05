@@ -25,7 +25,7 @@ conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/rotation.toml")
 
 conf = set_bond_angles(conf)
 
-lattice, dirs = MicrotubuleSpringModel.initialise(conf)
+beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
 
 # for (i,b) in enumerate(lattice)
 #     if i % 13 ∈ (4,5,6,7,8,9,10,11)
@@ -33,18 +33,18 @@ lattice, dirs = MicrotubuleSpringModel.initialise(conf)
 #     end
 # end
 
-Nt = 20000
+Nt = 10000
 s = zeros(Float64,(4,Nt))
 E = zeros(Nt)
 
 @showprogress for i in 1:Nt
-    iterate!(lattice, conf, dirs)
-    E[i] = total_energy(lattice, dirs, conf.spring_consts)
+    iterate!(beads, bead_info, conf, dirs)
+    E[i] = total_energy(beads, bead_info, dirs, conf.spring_consts)
 end
 
 GLMakie.activate!()
 GLMakie.closeall()
-scene = plot(lattice)
+scene = plot(beads, bead_info)
 scene
 
 ############################################################

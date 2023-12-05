@@ -27,6 +27,7 @@ Construct a lattice of beads connected by springs.
 """
 function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::Int=13)
     beads = Vector{Bead}(undef,N_lat*N_long)
+    bead_info = Vector{BeadPars}(undef,N_lat*N_long)
 
     r = S*a/N
     R = N*δx/2π
@@ -34,30 +35,30 @@ function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::
     angles = repeat(range(0.0,2π*(N-1)/N,N)[1:N_lat],N_long)
     vertical_offset = repeat(0:N_long-1,inner=N_lat)
 
-    positions = [set_pos(θ, idx, R, r, z_0=a*z, N=N_lat) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
+    x = [set_pos(θ, idx, R, r, z_0=a*z, N=N_lat) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
     alpha = reshape([Bool(z%2==1) for z in vertical_offset], (N_lat,N_long))
 
     for i in 1:N_long
         for j in 1:N_lat
+            idx = (i-1)*N_lat+j
             if N_lat==N
-                lat, (north, south) = neighbours((i-1)*N_lat+j, N_long*N_lat)
+                lat, (north, south) = neighbours(idx, N_long*N_lat)
             else
-                lat = lateral_nn_patch((i-1)*N_lat+j, N_lat)
-                (north, south) = long_nn_patch((i-1)*N_lat+j, N_lat, N_long)
+                lat = lateral_nn_patch(idx, N_lat)
+                (north, south) = long_nn_patch(idx, N_lat, N_long)
             end
             #long, intra = alpha[j,i]==true ? (long, intra) : (intra, long)
 
-            q = quat_from_axisangle([0,0,1],-π/2-angles[(i-1)*N_lat+j])
-            beads[(i-1)*N_lat+j] = Bead(
-                positions[(i-1)*N_lat+j], 
-                q,
+            q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
+            beads[idx] = Bead(x[idx], q, false)
+
+            bead_info[idx] = BeadPars(
                 alpha[j,i], 
-                false,
-                lat, south, north
+                north, lat[2], south, lat[1]
             )
         end
     end
-    return beads
+    return beads, bead_info
 end
 
 

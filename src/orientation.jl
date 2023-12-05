@@ -22,20 +22,19 @@ end
 end
 
 
-function angular_forces!(F, b1, lattice, dirs, K)
-    lat, south = b1.lat_nn, b1.long_nn
-    north = b1.intra_nn
+function angular_forces!(F, b1, beads, bead_info, dirs, K)
+    @unpack north, east, south, west = bead_info
 
     torque = MVector{3,Float64}(0,0,0)
-    bonds = [north, lat[2], south, lat[1]]
+    bonds = [north, east, south, west]
     for (bond,dir) in zip(bonds,eachcol(dirs))
         if bond != 0
             # transform bond direction according to bead orientation
             v = orientate_vector(dir, b1.q)
-            @fastmath r = lattice[bond].x - b1.x
+            @fastmath r = beads[bond].x - b1.x
             # torque from diff between rest direction v and actual r
             τ, F_ = torque_and_force(v, r, K)
-            F[:,bond] += F_
+            #F[:,bond] += F_
             torque += τ
         end
     end

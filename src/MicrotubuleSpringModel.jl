@@ -10,6 +10,7 @@ using Random
 using Quaternions
 using Configurations: @option
 using Setfield: @set
+using LoopVectorization: @tturbo
 
 using GLMakie
 using ColorSchemes
@@ -51,16 +52,24 @@ BeadAngle = MVector{3, Float64}
 mutable struct Bead
     x::BeadPos
     q::Quaternions.Quaternion
-    α::Bool
     kinesin::Bool
-    lat_nn::Tuple{Int,Int}
-    long_nn::Int
-    intra_nn::Int
+end
+
+# three vector for position and for orientation angles
+# alpha true for alpha monomer, false for beta monomer 
+struct BeadPars
+    α::Bool
+    north::Int
+    east::Int
+    south::Int
+    west::Int
 end
 
 include("conf.jl")
 include("lattice.jl")
 include("forces.jl")
+include("integrate/step.jl")
+include("integrate/euler.jl")
 include("transformations.jl")
 include("orientation.jl")
 include("sde.jl")
@@ -71,29 +80,29 @@ include("visuals.jl")
 
     Initialise the lattice and construct the bond directions
 """
-function initialise(conf::RotationConfig)::Tuple{Vector{Bead}, Dict{Bool,SMatrix{3,4, Float64}}} 
+function initialise(conf::RotationConfig)::Tuple{Vector{Bead}, Vector{BeadPars}, Dict{Bool,SMatrix{3,4, Float64}}} 
     @unpack num_rings, S, N, a, dx = conf.lattice
-    lattice = create_lattice(num_rings, a, dx; S=S, N=N)
+    beads, structure = create_lattice(num_rings, a, dx; S=S, N=N)
 
     dirs = Dict(
         true => bond_directions(conf.alpha),
         false => bond_directions(conf.beta)
     )
 
-    return lattice, dirs
+    return beads, structure, dirs
 
 end
 
 function initialise(conf::PatchConfig)
     @unpack N_lat, N_long, S, N, a, dx = conf.lattice
-    lattice = create_patch(N_lat, N_long, a, dx; S=S, N=N)
+    beads, structure = create_patch(N_lat, N_long, a, dx; S=S, N=N)
 
     dirs = Dict(
         true => bond_directions(conf.alpha),
         false => bond_directions(conf.beta)
     )
 
-    return lattice, dirs
+    return beads, structure, dirs
 
 end
 

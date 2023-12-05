@@ -1,4 +1,12 @@
-@option "iterate" struct IteratePars
+@option "euler" struct EulerPars
+    dt::Float64
+    mass::Float64
+    moment_inertia::Float64
+    damp_x::Float64
+    damp_theta::Float64
+end
+
+@option "rk4" struct RK4Pars
     dt::Float64
     mass::Float64
     moment_inertia::Float64
@@ -56,7 +64,7 @@ Full lattice and simulation parameters
     lattice::LatticePars
     alpha::AlphaConfirm = AlphaConfirm()
     beta::BetaConfirm = BetaConfirm()
-    iter_pars::IteratePars
+    iter_pars::Union{RK4Pars, EulerPars}
     spring_consts::SpringConst
 end
 
@@ -67,6 +75,6 @@ Parameters for a patch of a lattice e.g. 5x5 grid
     lattice::LatticePatchPars
     alpha::AlphaConfirm = AlphaConfirm()
     beta::BetaConfirm = BetaConfirm()
-    iter_pars::IteratePars
+    iter_pars::Union{RK4Pars, EulerPars}
     spring_consts::SpringConst
 end
