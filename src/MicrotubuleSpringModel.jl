@@ -40,6 +40,10 @@ export
     RotationConfig,
     PatchConfig,
 
+    surface_area,
+    youngs_modulus,
+    microtubule_length,
+
     plot,
     colorschemes
 
@@ -66,14 +70,14 @@ struct BeadPars
 end
 
 include("conf.jl")
-include("lattice.jl")
-include("forces.jl")
-include("integrate/step.jl")
-include("integrate/euler.jl")
 include("transformations.jl")
-include("orientation.jl")
-include("sde.jl")
+include("lattice.jl")
+include("integrate/forces.jl")
+include("integrate/energy.jl")
+include("integrate/step.jl")
+include("integrate/orientation.jl")
 include("visuals.jl")
+include("utils.jl")
 
 """
     initialise(conf)::Tuple{Vector{Bead}, Dict{Bool,BondDirec}}
@@ -96,6 +100,20 @@ end
 function initialise(conf::PatchConfig)
     @unpack N_lat, N_long, S, N, a, dx = conf.lattice
     beads, structure = create_patch(N_lat, N_long, a, dx; S=S, N=N)
+
+    dirs = Dict(
+        true => bond_directions(conf.alpha),
+        false => bond_directions(conf.beta)
+    )
+
+    return beads, structure, dirs
+
+end
+
+
+function initialise_dimer(conf::RotationConfig)
+    @unpack S, N, a, dx = conf.lattice
+    beads, structure = create_dimer(a, dx; S=S, N=N)
 
     dirs = Dict(
         true => bond_directions(conf.alpha),

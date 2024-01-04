@@ -38,8 +38,8 @@ end
 function GLMakie.plot!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}, dirs; a=4.05, l=4.0)
     c = [NATURE.colors[3],NATURE.colors[4],NATURE.colors[5],NATURE.colors[6]]
 
-    for b in lattice
-        for (i,bond) in enumerate(eachcol(dirs[b.α]))
+    for (b,b_) in zip(lattice, info)
+        for (i,bond) in enumerate(eachcol(dirs[b_.α]))
             v = MicrotubuleSpringModel.transform_orientation(bond,b.q)
             v_ = l*normalize([imag_part(v)...])
             arrows!(scene, [Point3f(b.x)], Vector{Vec{3, Float32}}([v_]), linewidth=0.2, color=c[i], arrowsize=0.3)
@@ -48,4 +48,37 @@ function GLMakie.plot!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}, dir
 
     plot!(scene, lattice, info; a=a)
     return scene
+end
+
+
+function plot_individual!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}; a=8.05)
+    beads = []
+    for (b,b_) in zip(lattice, info)
+        bead = mesh!(scene, Sphere(Point3f(b.x), a/2), color=COLORS[(b_.α, b.kinesin)], shininess=32.0)
+        push!(beads, bead)
+    end
+
+    GLMakie.scale!(scene, 0.05, 0.05, 0.05)
+    center!(scene)
+    return beads
+end
+
+
+
+function plot_E!(ax, time, E)
+    labels = [L"E_{lat}^r", L"E_{long}^r", L"E_{in}^r", L"E_{lat}^\theta", L"E_{long}^\theta", L"E_{in}^\theta"]
+    E_band = cumsum(E,dims=1)
+    E_tot = E_band[end,:]
+    lines!(ax,time, E_tot, color=:black, linewidth=4)
+    band!(ax, time, 0, E_band[1,:], color=NATURE.colors[1], label=labels[1])
+    for i in 1:5
+        lines!(ax,time, E_band[i,:], color=:black, linewidth=2)
+        band!(ax, time, E_band[i,:], E_band[i+1,:], color=MicrotubuleSpringModel.NATURE.colors[i+1], label=labels[i+1])
+    end
+    xlims!(0,time[end])
+    ylims!(low=0.0)
+    ax.xlabel = "Iteration number"
+    ax.ylabel = "Total Energy"
+    axislegend(ax, position=:rt, nbanks = 2)
+    return ax
 end

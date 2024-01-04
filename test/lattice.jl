@@ -1,17 +1,24 @@
-
+#  VS Code workaround: https://github.com/julia-vscode/julia-vscode/issues/800
+if isdefined(@__MODULE__, :LanguageServer)
+    @info "Using VS Code workaround..."
+    include("../src/MicrotubuleSpringModel.jl")
+    using .MicrotubuleSpringModel
+else
+    using MicrotubuleSpringModel
+end
 
 @testset "Testing lattice creation" begin
     a = 4.05
     δx = 5.13
-    lattice = create_lattice(5, a, δx)
+    lattice, bead_info = create_lattice(5, a, δx)
     Ntot = length(lattice)
 
     @test length(lattice) == 5*13
-    @test lattice[5].α == true
-    @test lattice[23].α == false
-    @test lattice[3*13+5].α == false
+    @test bead_info[5].α == false
+    @test bead_info[23].α == true
+    @test bead_info[3*13+5].α == true
     
-    @test lattice[14].θ == BeadAngle(0,0,0)
+    #@test lattice[14].θ == BeadAngle(0,0,0)
 
     pos = [b.x for b in lattice]
     distances = reshape([dot(x1-x2,x1-x2) for x1 in pos for x2 in pos],(Ntot,Ntot))

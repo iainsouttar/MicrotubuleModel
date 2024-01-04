@@ -21,30 +21,26 @@ using Quaternions: Quaternion
 
 #####################################################
 
-conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/rotation.toml")
-
-conf = set_bond_angles(conf)
-
-beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
-
-@benchmark iterate!($beads, $bead_info, $dirs, $conf, $conf.iter_pars)
-
-#######################################################
-
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")
 
 conf = set_bond_angles(conf)
 
 beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
 
-@benchmark iterate!($beads, $bead_info, $dirs, $conf, $conf.iter_pars)
+Nt = 10000
+step = 1
+time = 0:step:Nt
+E = zeros((6,Nt÷step+1))
 
-###############################################
+E[:,1] = total_energy(beads, bead_info, dirs, conf.spring_consts)
+@showprogress for i in 1:Nt
+    iterate!(beads, bead_info, dirs, conf, conf.iter_pars)
+    if i % step == 0
+        E[:,i÷step+1] = total_energy(beads, bead_info, dirs, conf.spring_consts)
+    end
+end
 
-b1 = beads[15]
-@unpack north, α = bead_info[15]
-
-v = MicrotubuleSpringModel.orientate_vector(dirs[α][:,1], b1.q)
-@fastmath r = beads[north].x - b1.x
-
-@benchmark torque_and_force($v, $r, 1.0)
+GLMakie.activate!()
+GLMakie.closeall()
+scene = plot(beads, bead_info)
+scene
