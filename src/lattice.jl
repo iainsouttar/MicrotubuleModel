@@ -77,34 +77,6 @@ Construct a full lattice of beads connected by springs.
 create_lattice(num_rings, a, δx; S::Int=3, N::Int=13) = create_patch(N, num_rings, a, δx; S=S, N=N)
 
 
-# function create_dimer(a::Real, δx::Real; S::Int=3, N::Int=13)
-#     beads = Vector{Bead}(undef,2)
-#     bead_info = Vector{BeadPars}(undef,2)
-
-#     r = S*a/N
-#     R = N*δx/2π
-
-#     angles = [0,0]
-#     vertical_offset = [0,1]
-
-#     x = [set_pos(θ, idx, R, r, z_0=a*z, N=N) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
-#     q = quat_from_axisangle([0,0,1],-π/2)
-
-#     beads[1] = Bead(x[1], copy(q), false)
-#     beads[2] = Bead(x[2], copy(q), false)
-
-#     bead_info[1] = BeadPars(
-#         false, 
-#         2, 0, 0, 0
-#     )
-#     bead_info[2] = BeadPars(
-#         true, 
-#         1, 0, 0, 0
-#     )
-#     return beads, bead_info
-# end
-
-
 function create_dimer(a::Real, δx::Real; S::Int=3, N::Int=13)
     beads = Vector{Bead}(undef,2)
     bead_info = Vector{BeadPars}(undef,2)
@@ -214,7 +186,8 @@ function set_bond_angles(conf)
     R = N*dx/2π
     l = 2*R*sin(π/N)
     ϕ = atan(r,l)
-    δ = 0.2
+    #δ = 0.2
+    δ = 0.0
 
     conf = @set conf.alpha = MicrotubuleSpringModel.AlphaConfirm(
         [π/2, -δ],

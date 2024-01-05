@@ -8,9 +8,12 @@ using Base.Threads
 using Distributions
 using Random
 using Quaternions
-using Configurations: @option
+using Configurations: @option, to_toml
 using Setfield: @set
 using LoopVectorization: @tturbo
+using DelimitedFiles
+using CSV
+using DataFrames
 
 using GLMakie
 using ColorSchemes
@@ -43,6 +46,9 @@ export
     surface_area,
     youngs_modulus,
     microtubule_length,
+    save_to_csv,
+    save_params,
+    load_from_csv,
 
     plot,
     colorschemes

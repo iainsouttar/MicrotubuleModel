@@ -35,6 +35,8 @@ end
     F = zeros(Float64, (3, lastindex(beads)))
     torque = similar(F)
     b = deepcopy(beads)
+
+    N *= 1
     
     k1x, k1q = forward(b, bead_info, F, torque, dirs, conf)
     @threads for i in 1:Ntot
@@ -92,7 +94,7 @@ end
 function external_forces!(F, beads, bead_info, consts::IsotropicForce)
     force = SVector{3,Float64}(consts.F, 0, 0)
     @inbounds @fastmath for i in 1:lastindex(beads)
-        F[:,i] += force
+        F[:,i] .+= force
     end
 end
 
@@ -100,7 +102,7 @@ function external_forces!(F, beads, bead_info, consts::YoungsModulusTest)
     force = SVector{3,Float64}(0, 0, consts.F)
     Ntot = lastindex(beads)
     @inbounds @fastmath for i in 1:Ntot
-        F[:,i] += force*(i>Ntot-consts.N-1)
+        F[:,i] .+= force*(i>Ntot-consts.N-1)
     end
 end
 

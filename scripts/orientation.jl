@@ -39,7 +39,7 @@ MicrotubuleSpringModel.eval_forces_and_torques!(F, torque, beads, bead_info, dir
 
 GLMakie.activate!()
 GLMakie.closeall()
-scene = plot(beads, bead_info, dirs)
+scene = plot(beads, bead_info)
 scene
 
 ############################################################

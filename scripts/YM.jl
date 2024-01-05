@@ -25,12 +25,12 @@ conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/youngs_modulus.t
 conf = set_bond_angles(conf)
 beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
 
-microtubule_length(beads, conf.lattice) ≈ (conf.lattice.num_rings-1) *conf.lattice.a
+@show microtubule_length(beads, conf.lattice) ≈ (conf.lattice.num_rings-1) *conf.lattice.a
 
 ym_conf = deepcopy(conf.external_force)
 conf = @set conf.external_force = MicrotubuleSpringModel.NoExternalForce()
 
-Nt = 500
+Nt = 2000
 step = 1
 time = 0:step:Nt
 E = zeros((6,Nt÷step+1))
@@ -58,12 +58,12 @@ conf = @set conf.external_force = ym_conf
 
 L0 = microtubule_length(beads, conf.lattice)
 
-forces = 0.1:0.2:0.6
+forces = 0.0:0.4:2.0
 Nt = 10_000
 step = 50
 time = 0:step:Nt
 
-stress = forces ./ SA(10.61,2)
+stress = forces ./ surface_area(10.61,2)
 strain = zeros(length(forces))
 
 for (i,F) in enumerate(forces)
@@ -73,11 +73,17 @@ end
 
 using DataFrames, GLM, StatsBase
 
-data = DataFrame(X=stress, Y=strain)
-sol = lm(@formula(Y ~ X), data)
+function fit_YM(data)
+    sol = lm(@formula(Y ~ X), data)
 
-YM = 1/ coef(sol)[2]
-print(YM, " +/- " , stderror(sol)[2]*YM^2)
+    YM = 1/ coef(sol)[2]
+    return sol, YM, stderror(sol)[2]*YM^2
+end
+
+data = DataFrame(X=stress, Y=strain)
+sol, YM, err = fit_YM(data)
+
+print(YM, " +/- " , err)
 
 x = 0.0:0.00001:maximum(stress)*1.05
 est = predict(sol, DataFrame(X=x), interval=:confidence)
@@ -90,6 +96,17 @@ ax = Axis(f[1,1],
 )
 band!(ax, x, est.lower, est.upper, color=MicrotubuleSpringModel.NATURE.colors[2])
 lines!(ax, x, est.prediction, linewidth=3, color=:black)
-scatter!(ax, data.X, data.Y)
+scatter!(ax, stress, strain)
 limits!(ax,0.0, stress[end]*1.02 ,0.0, strain[end]*1.02)
 f
+
+save_to_csv("young-modulus-fit.csv", collect(x), [est.prediction, est.lower, est.upper])
+save_to_csv("young-modulus-data.csv", stress, [strain])
+
+using CSV 
+
+est[!, "x"] = collect(x)
+select!(est, :x, Not([:x]))
+save_to_csv("young-modulus-fit-2.csv", est)
+
+save_to_csv("young-modulus-data-2.csv", DataFrame(stress=stress, strain=strain))

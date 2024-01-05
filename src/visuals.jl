@@ -63,6 +63,12 @@ function plot_individual!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}; 
     return beads
 end
 
+function plot_flat!(ax::Axis, beads::Vector{Bead}, bead_info::Vector{BeadPars})
+    pts = [Point2f(b.x[1],b.x[3]) for b in beads]
+    color = [COLORS[(b_.α, b.kinesin)] for (b,b_) in zip(beads, bead_info)]
+    return scatter!(ax, pts, color=color, marker=:circle)
+end
+
 
 
 function plot_E!(ax, time, E)

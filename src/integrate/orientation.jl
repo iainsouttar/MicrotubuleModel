@@ -17,12 +17,9 @@ function angular_forces!(F, i, b1, beads, bead_info, dirs, K)
     @unpack north, east, south, west = bead_info
 
     torque = MVector{3,Float64}(0,0,0)
-    F_temp = MVector{3,Float64}(0,0,0)
     bonds = [north, east, south, west]
-    F_i = @view F[:,i]
     for (bond,dir) in zip(bonds,eachcol(dirs))
         if bond != 0
-            F_b = @view F[:,bond]
             # transform bond direction according to bead orientation
             v = orientate_vector(dir, b1.q)
             @fastmath r = beads[bond].x - b1.x
