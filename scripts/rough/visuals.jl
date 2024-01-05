@@ -1,6 +1,7 @@
 
 
 using GLMakie
+using Parameters
 
 GLMakie.activate!()
 
@@ -8,23 +9,22 @@ conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/rotation.toml")
 
 conf = set_bond_angles(conf)
 
-lattice, dirs = MicrotubuleSpringModel.initialise(conf)
+beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
 
 GLMakie.activate!()
 GLMakie.closeall()
-scene = plot(lattice)
+scene = plot(beads, bead_info)
 
 a = 2.55
-idx = 3*13+7
-lat = lattice[idx].lat_nn
-long = lattice[idx].long_nn
-intra = lattice[idx].intra_nn
+idx = 9*13
+@unpack north, south, east, west = bead_info[idx]
+
+bonds = [north, east, south, west]
+colors = MicrotubuleSpringModel.NATURE.colors[4:7]
+
 
 s = Scene(scene, camera=scene.camera)
-lat_plots = [mesh!(s, Sphere(Point3f(lattice[b].x), a/2), color=:black) for b in lat if b!=0]
-long_plots = long==0 ? Nothing : mesh!(s, Sphere(Point3f(lattice[long].x), a/2), color=:yellow)
-long_plots = intra==0 ? Nothing : mesh!(s, Sphere(Point3f(lattice[intra].x), a/2), color=:purple)
-mesh!(s, Sphere(Point3f(lattice[idx].x), a/2), color=:pink)
+plots = [mesh!(s, Sphere(Point3f(beads[b].x), a), color=c) for (b,c) in zip(bonds,colors) if b!=0]
 
 scene
 

@@ -4,13 +4,17 @@ authors = ["Jeremy Worsfold <jeremyworsfold2@gmail.com> and contributors"]
 version = "0.1.0"
 
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 Configurations = "5218b696-f38b-4ac9-8b61-a12ec717816d"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FilePaths = "8fc22ac5-c921-52a6-82fd-178b2807b824"
 FilePathsBase = "48062228-2e41-5def-b9a4-89aafe57970f"
+GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

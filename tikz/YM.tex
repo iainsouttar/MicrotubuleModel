@@ -1,0 +1,31 @@
+\documentclass[crop,tikz]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.3}
+\input{style.tex}
+\usepackage{siunitx}
+
+\pgfplotstableread[col sep = comma]{young-modulus-fit-2.csv}\fit
+\pgfplotstableread[col sep = comma]{young-modulus-data-2.csv}\data
+
+\begin{document}
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel={Stress (\unit{\giga\pascal})},
+        ylabel={Strain},
+        legend pos=north west,
+        cycle list name=list2,
+        tick pos=left,
+        tick align=outside,
+    ]
+        \addplot+[mark=none] table [x = x, y = prediction] {\fit};
+        \addlegendentry{$Y=\qty{0.1008}{\giga\pascal}$}
+
+        \pgfplotsset{cycle list name=list1}
+        \addplot+[only marks] table [x = stress, y = strain] {\data};
+    
+        %\addplot+[mark=none] table [x index=0,y index=2] {data/fig2-theory-2.dat};
+        %\addplot+[mark=none] table [x index=0,y index=3] {data/fig2-theory-2.dat};
+        %\addplot+[mark=none] table [x index=0,y index=4] {data/fig2-theory-2.dat};
+    \end{axis}
+\end{tikzpicture}
+\end{document}

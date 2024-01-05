@@ -1,15 +1,18 @@
 @option "euler" struct EulerPars
     dt::Float64
-    mass::Float64
-    moment_inertia::Float64
+    damp_x::Float64
+    damp_theta::Float64
+end
+
+@option "stoch_euler" struct StochEulerPars
+    dt::Float64
+    Tk_B::Float64
     damp_x::Float64
     damp_theta::Float64
 end
 
 @option "rk4" struct RK4Pars
     dt::Float64
-    mass::Float64
-    moment_inertia::Float64
     damp_x::Float64
     damp_theta::Float64
 end
@@ -57,6 +60,17 @@ end
     west::SVector{2,Float64} = [π-π/13,π/2+0.1819]
 end
 
+@option "istropic_force" struct IsotropicForce
+    F::Float64 = 1.0
+end
+
+@option "youngs_modulus" struct YoungsModulusTest
+    F::Float64 = 1.0
+    N::Int = 13
+end
+
+@option "none" struct NoExternalForce end
+
 """
 Full lattice and simulation parameters
 """
@@ -64,8 +78,9 @@ Full lattice and simulation parameters
     lattice::LatticePars
     alpha::AlphaConfirm = AlphaConfirm()
     beta::BetaConfirm = BetaConfirm()
-    iter_pars::Union{RK4Pars, EulerPars}
+    iter_pars::Union{RK4Pars, EulerPars, StochEulerPars}
     spring_consts::SpringConst
+    external_force::Union{NoExternalForce, IsotropicForce, YoungsModulusTest}
 end
 
 """
@@ -75,6 +90,19 @@ Parameters for a patch of a lattice e.g. 5x5 grid
     lattice::LatticePatchPars
     alpha::AlphaConfirm = AlphaConfirm()
     beta::BetaConfirm = BetaConfirm()
-    iter_pars::Union{RK4Pars, EulerPars}
+    iter_pars::Union{RK4Pars, EulerPars, StochEulerPars}
     spring_consts::SpringConst
+    external_force::Union{NoExternalForce, IsotropicForce, YoungsModulusTest}
+end
+
+"""
+Full lattice and simulation parameters
+"""
+@option "YM conf" struct YoungsModulus
+    lattice::LatticePars
+    alpha::AlphaConfirm = AlphaConfirm()
+    beta::BetaConfirm = BetaConfirm()
+    iter_pars::Union{RK4Pars, EulerPars, StochEulerPars}
+    spring_consts::SpringConst
+    external_force::Union{NoExternalForce, YoungsModulusTest}
 end

@@ -47,7 +47,6 @@ function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::
                 lat = lateral_nn_patch(idx, N_lat)
                 (north, south) = long_nn_patch(idx, N_lat, N_long)
             end
-            #long, intra = alpha[j,i]==true ? (long, intra) : (intra, long)
 
             q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
             beads[idx] = Bead(x[idx], q, false)
@@ -76,6 +75,35 @@ Construct a full lattice of beads connected by springs.
 - `Vector{Bead}`: lattice of connected beads
 """
 create_lattice(num_rings, a, δx; S::Int=3, N::Int=13) = create_patch(N, num_rings, a, δx; S=S, N=N)
+
+
+function create_dimer(a::Real, δx::Real; S::Int=3, N::Int=13)
+    beads = Vector{Bead}(undef,2)
+    bead_info = Vector{BeadPars}(undef,2)
+
+    r = S*a/N
+    R = N*δx/2π
+
+    angles = range(0.0,2π*(N-1)/N,N)[1:2]
+    vertical_offset = [0,0]
+
+    x = [set_pos(θ, idx, R, r, z_0=a*z, N=N) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
+    q = quat_from_axisangle([0,0,1],-π/2)
+    # q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
+
+    beads[1] = Bead(x[1], copy(q), false)
+    beads[2] = Bead(x[2], copy(q), false)
+
+    bead_info[1] = BeadPars(
+        false, 
+        0, 2, 0, 0
+    )
+    bead_info[2] = BeadPars(
+        false, 
+        0, 0, 0, 1
+    )
+    return beads, bead_info
+end
 
 
 """
@@ -158,7 +186,8 @@ function set_bond_angles(conf)
     R = N*dx/2π
     l = 2*R*sin(π/N)
     ϕ = atan(r,l)
-    δ = 0.2
+    #δ = 0.2
+    δ = 0.0
 
     conf = @set conf.alpha = MicrotubuleSpringModel.AlphaConfirm(
         [π/2, -δ],

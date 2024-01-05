@@ -4,7 +4,7 @@
     v = MicrotubuleSpringModel.direc_from_angles(BondAngle(π/4,π/4))
     @test norm(v) ≈ 1.0
 
-    v_ = transform_orientation()
+    #v_ = transform_orientation()
 
     theta, thetahat, nhat = MicrotubuleSpringModel.bond_angle(v_prime, normalize(BondDirec(0.5,0.2,1)))
 

@@ -1,0 +1,36 @@
+\definecolor{col1}{HTML}{1b9e77}
+\definecolor{col2}{HTML}{d95f02}
+\definecolor{col3}{HTML}{7570b3}
+\definecolor{col4}{HTML}{e7298a}
+
+\definecolor{sn1}{HTML}{0072B2}
+\definecolor{sn2}{HTML}{009E73}
+\definecolor{sn3}{HTML}{D55E00}
+\definecolor{sn4}{HTML}{CC79A7}
+
+\definecolor{lightgrey}{HTML}{EEEEEE}
+
+\pgfplotscreateplotcyclelist{list1}{
+        {fill=sn1,mark=*, mark size=2},
+        {fill=sn2,mark=square*, mark size = 2},
+        {fill=sn3,mark=triangle*, mark size = 2.4},
+        {fill=sn4,mark=diamond*, mark size = 2.4},
+      }
+
+\pgfplotscreateplotcyclelist{list2}{%
+{color=sn1, solid, very thick},
+{color=sn2, dashed, very thick},
+{color=sn3, dotted, very thick},
+{color=sn4, dashdotted, very thick}}
+
+\pgfplotsset{
+    %width=8cm,
+    table/search path={../results/processed},
+    every axis legend/.append style={
+        fill=lightgrey,
+        draw=none, 
+        column sep=0.3cm,
+    }
+    tick align = outside,
+    yticklabel style={/pgf/number format/fixed},  
+}
