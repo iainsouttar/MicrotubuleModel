@@ -1,11 +1,11 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 20
+num_rings = 500
 a = 4.05
 dx = 5.13
 
-[iter_pars.rk4]
+[iter_pars.euler]
 dt = 0.2
 damp_x = 0.1326
 damp_theta = 0.02487

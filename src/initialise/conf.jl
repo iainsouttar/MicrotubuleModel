@@ -52,6 +52,25 @@ end
 
 ###########################################################
 
+@option "istropic_force" struct IsotropicForce
+    F::Float64 = 1.0
+end
+
+@option "youngs_modulus" struct YoungsModulusTest
+    F::Float64 = 1.0
+    N::Int = 13
+end
+
+@option "bending_stiffness" struct BendingStiffnessTest
+    F::Float64 = 1.0
+    N::Int = 13
+end
+
+@option "none" struct NoExternalForce end
+
+
+########################################################
+
 function set_bond_angles(conf)
     @unpack S, N, dx, a = conf.lattice
     α, β = calc_natural_angles(S, N, dx, a)
@@ -81,16 +100,17 @@ end
 
     Initialise the lattice and construct the bond directions
 """
-function initialise(conf::RotationConfig)::Tuple{Vector{Bead}, Vector{BeadPars}, Dict{Bool,SMatrix{3,4, Float64}}} 
+function initialise(conf::RotationConfig)::Tuple{Vector{Bead}, Vector{BeadPars}}
     @unpack num_rings, S, N, a, dx = conf.lattice
-    beads, structure = create_lattice(num_rings, a, dx; S=S, N=N)
 
     dirs = Dict(
         true => bond_directions(conf.alpha),
         false => bond_directions(conf.beta)
     )
 
-    return beads, structure, dirs
+    beads, structure = create_lattice(dirs, conf.spring_consts, num_rings, a, dx; S=S, N=N)
+
+    return beads, structure
 
 end
 

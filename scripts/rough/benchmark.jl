@@ -1,7 +1,7 @@
 #  VS Code workaround: https://github.com/julia-vscode/julia-vscode/issues/800
 if isdefined(@__MODULE__, :LanguageServer)
     @info "Using VS Code workaround..."
-    include("../src/MicrotubuleSpringModel.jl")
+    include("../../src/MicrotubuleSpringModel.jl")
     using .MicrotubuleSpringModel
 else
     using MicrotubuleSpringModel
@@ -21,13 +21,13 @@ using Quaternions: Quaternion
 
 #####################################################
 
-conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/rotation.toml")
+conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/bending_stiffness.toml")
 
 conf = set_bond_angles(conf)
 
-beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
+beads, bead_info = MicrotubuleSpringModel.initialise(conf)
 
-@benchmark iterate!($beads, $bead_info, $dirs, $conf, $conf.iter_pars)
+@benchmark iterate!($beads, $bead_info, $conf, $conf.iter_pars)
 
 #######################################################
 

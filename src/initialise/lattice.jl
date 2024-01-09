@@ -25,7 +25,7 @@ Construct a lattice of beads connected by springs.
 # Returns
 - `Vector{Bead}`: lattice of connected beads
 """
-function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::Int=13)
+function create_patch(dirs, consts, N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::Int=13)
     beads = Vector{Bead}(undef,N_lat*N_long)
     bead_info = Vector{BeadPars}(undef,N_lat*N_long)
 
@@ -51,9 +51,23 @@ function create_patch(N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::
             q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
             beads[idx] = Bead(x[idx], q, false)
 
+            bonds = [north, lat[2], south, lat[1]]
+
+            @unpack k_lat, k_long, k_in, k_in_kin = consts
+            @unpack l0_lat, l0_long, l0_in, l0_in_kin = consts
+
+            (k_north, l0_north) = alpha[j,i] ? (k_long, l0_long) : (k_in, l0_in)
+            (k_south, l0_south) = alpha[j,i] ? (k_in, l0_in) : (k_long, l0_long)
+
+            k = [k_north, k_lat, k_south, k_lat]
+            l0 = [l0_north, l0_lat, l0_south, l0_lat]
+
             bead_info[idx] = BeadPars(
                 alpha[j,i], 
-                north, lat[2], south, lat[1]
+                bonds[bonds .!= 0],
+                dirs[alpha[j,i]][bonds .!= 0],
+                k[bonds .!= 0],
+                l0[bonds .!= 0]
             )
         end
     end
@@ -74,33 +88,37 @@ Construct a full lattice of beads connected by springs.
 # Returns
 - `Vector{Bead}`: lattice of connected beads
 """
-create_lattice(num_rings, a, δx; S::Int=3, N::Int=13) = create_patch(N, num_rings, a, δx; S=S, N=N)
+create_lattice(dirs, consts, num_rings, a, δx; S::Int=3, N::Int=13) = create_patch(dirs, consts, N, num_rings, a, δx; S=S, N=N)
 
 
-function create_dimer(a::Real, δx::Real; S::Int=3, N::Int=13)
-    beads = Vector{Bead}(undef,2)
-    bead_info = Vector{BeadPars}(undef,2)
+# function create_dimer(a::Real, δx::Real; S::Int=3, N::Int=13)
+#     beads = Vector{Bead}(undef,2)
+#     bead_info = Vector{BeadPars}(undef,2)
 
-    r = S*a/N
-    R = N*δx/2π
+#     r = S*a/N
+#     R = N*δx/2π
 
-    angles = range(0.0,2π*(N-1)/N,N)[1:2]
-    vertical_offset = [0,0]
+#     angles = range(0.0,2π*(N-1)/N,N)[1:2]
+#     vertical_offset = [0,0]
 
-    x = [set_pos(θ, idx, R, r, z_0=a*z, N=N) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
-    q = quat_from_axisangle([0,0,1],-π/2)
-    # q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
+#     x = [set_pos(θ, idx, R, r, z_0=a*z, N=N) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
+#     q = quat_from_axisangle([0,0,1],-π/2)
+#     # q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
 
-    beads[1] = Bead(x[1], copy(q), false)
-    beads[2] = Bead(x[2], copy(q), false)
+#     beads[1] = Bead(x[1], copy(q), false)
+#     beads[2] = Bead(x[2], copy(q), false)
 
-    bead_info[1] = BeadPars(
-        false, 
-        0, 2, 0, 0
-    )
-    bead_info[2] = BeadPars(
-        false, 
-        0, 0, 0, 1
-    )
-    return beads, bead_info
-end
+#     bead_info[1] = BeadPars(
+#         false,
+#         [2],
+
+#         0, 2, 0, 0
+#     )
+#     bead_info[2] = BeadPars(
+#         false, 
+#         [1],
+
+#         0, 0, 0, 1
+#     )
+#     return beads, bead_info
+# end

@@ -77,10 +77,14 @@ end
 # alpha true for alpha monomer, false for beta monomer 
 struct BeadPars
     α::Bool
-    north::Int
-    east::Int
-    south::Int
-    west::Int
+    bonds::Vector{Int}
+    directions::Vector{SVector{3,Float64}}
+    consts::Vector{Float64}
+    lengths::Vector{Float64}
+    # north::Int
+    # east::Int
+    # south::Int
+    # west::Int
 end
 
 include("utils/quaternions.jl")

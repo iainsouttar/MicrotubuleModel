@@ -6,32 +6,13 @@ Calculate 3D force acting on bead `b1` due to the linear spring attaching its ne
 """
 function linear_forces(
     b1::Bead,
-    lattice::Vector{Bead},
-    b_info::BeadPars, 
-    consts::SpringConst
+    bonds,
+    b_info::BeadPars
 )
-    @unpack k_lat, k_long, k_in, k_in_kin = consts
-    @unpack l0_lat, l0_long, l0_in, l0_in_kin = consts
-    @unpack north, east, south, west = b_info
     F = MVector{3,Float64}(0,0,0)
-
-    k, l0 = b1.kinesin == true ? (k_in_kin, l0_in_kin) : (k_in, l0_in)
-    (k_north, l0_north) = b_info.α ? (k_long, l0_long) : (k, l0)
-    (k_south, l0_south) = b_info.α ? (k, l0) : (k_long, l0_long)
-
-    if north != 0
-        F += spring_force(lattice[north].x - b1.x, l0_north, k_north)
+    for (k, l0, b) in zip(b_info.consts, b_info.lengths, bonds)
+        F += spring_force(b.x - b1.x, l0, k)
     end
-    if east != 0
-        F += spring_force(lattice[east].x - b1.x, l0_lat, k_lat)
-    end
-    if south != 0
-        F += spring_force(lattice[south].x - b1.x, l0_south, k_south)
-    end
-    if west != 0
-        F += spring_force(lattice[west].x - b1.x, l0_lat, k_lat)
-    end
-
     return F
 end
 

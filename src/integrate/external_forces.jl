@@ -4,22 +4,6 @@ Default is no external force.
 
 """
 
-@option "istropic_force" struct IsotropicForce
-    F::Float64 = 1.0
-end
-
-@option "youngs_modulus" struct YoungsModulusTest
-    F::Float64 = 1.0
-    N::Int = 13
-end
-
-@option "bending_stiffness" struct BendingStiffnessTest
-    F::Float64 = 1.0
-    N::Int = 13
-end
-
-@option "none" struct NoExternalForce end
-
 
 function external_forces!(F, beads, bead_info, consts::IsotropicForce)
     force = SVector{3,Float64}(consts.F, 0, 0)

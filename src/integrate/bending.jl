@@ -23,22 +23,39 @@ end
 
 Calculate 3D torque and force acting on bead `b1` and its neighbours due to the bond angle bending at `b1`. Updates overall force vectors and returns torque on b1.
 """
-function angular_forces!(F, i, b1, beads, bead_info, dirs, K)
-    @unpack north, east, south, west = bead_info
-
+function angular_forces(b1, bonds, dirs, K)
+    F_ = MMatrix{3, 4, Float64}(undef)
     torque = MVector{3,Float64}(0,0,0)
-    bonds = [north, east, south, west]
-    for (bond,dir) in zip(bonds,eachcol(dirs))
-        if bond != 0
-            # transform bond direction according to bead orientation
-            v = orientate_vector(dir, sign(b1.q))
-            @fastmath r = beads[bond].x - b1.x
-            # torque from diff between rest direction v and actual r
-            τ, F_ = torque_and_force(v, r, K)
-            @. F[:,bond] -= F_ 
-            @. F[:,i] += F_
-            torque += τ
-        end
+    F1 = MVector{3,Float64}(0,0,0)
+    for (i,dir) in enumerate(dirs)
+        # transform bond direction according to bead orientation
+        v = orientate_vector(dir, sign(b1.q))
+        @fastmath r = bonds[i].x - b1.x
+        # torque from diff between rest direction v and actual r
+        τ, F = torque_and_force(v, r, K)
+        @. F_[:,i] = -F
+        torque += τ
+        F1 += F
     end
-    return torque
+    return torque, F1, F_
 end
+
+# function angular_forces!(F, i, b1, beads, bead_info, dirs, K)
+#     @unpack north, east, south, west = bead_info
+
+#     torque = MVector{3,Float64}(0,0,0)
+#     bonds = [north, east, south, west]
+#     for (bond,dir) in zip(bonds,eachcol(dirs))
+#         if bond != 0
+#             # transform bond direction according to bead orientation
+#             v = orientate_vector(dir, sign(b1.q))
+#             @fastmath r = beads[bond].x - b1.x
+#             # torque from diff between rest direction v and actual r
+#             τ, F_ = torque_and_force(v, r, K)
+#             @. F[:,bond] -= F_ 
+#             @. F[:,i] += F_
+#             torque += τ
+#         end
+#     end
+#     return torque
+# end

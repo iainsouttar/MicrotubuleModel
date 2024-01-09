@@ -13,6 +13,12 @@ end
     west::SVector{2,Float64} = [π-π/13,π/2+0.1819]
 end
 
+function bond_directions(thetas::Union{AlphaConfirm,BetaConfirm})
+    vs = [direc_from_angles(BondAngle(t)) for t in [thetas.north,thetas.east,thetas.south,thetas.west]]
+    #return SMatrix{3,4, Float64}(hcat(vs...))
+    return vs
+end
+
 
 function calc_natural_angles(S, N, dx, a)
     r = S*a/N

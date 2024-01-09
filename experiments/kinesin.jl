@@ -41,7 +41,7 @@ Nt = 10_000
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/bending_stiffness.toml")
 conf = set_bond_angles(conf)
 
-beads, bead_info, dirs = burnin(conf, 1000)
+beads, bead_info = burnin(conf, 10_000)
 
 @showprogress for i in 1:Nt
     iterate!(beads, bead_info, dirs, conf, conf.iter_pars)
@@ -77,3 +77,11 @@ GLMakie.activate!()
 GLMakie.closeall()
 scene = plot(beads, bead_info)
 scene
+
+
+
+b = bead_info[1]
+
+n = [b.north, b.east, b.south, b.west]
+directions = dirs[b.α][:, n .!= 0]
+n = n[n .!= 0]
