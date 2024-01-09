@@ -26,7 +26,7 @@ end
 CairoMakie.activate!()
 f = Figure(resolution=(1000,1500))
 ax = Axis(f[1,1], aspect=DataAspect())
-plot!(ax, beads, bead_info)
+plot_flat!(ax, beads, bead_info)
 hidedecorations!(ax)
 hidespines!(ax)
 f

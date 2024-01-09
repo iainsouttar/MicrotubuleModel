@@ -14,6 +14,7 @@ using LoopVectorization: @tturbo
 using DelimitedFiles
 using CSV
 using DataFrames
+using ProgressMeter: @showprogress
 
 using GLMakie
 using ColorSchemes
@@ -46,12 +47,19 @@ export
     surface_area,
     youngs_modulus,
     microtubule_length,
+    deflection_end,
+    stiffness,
+
     save_to_csv,
     save_params,
     load_from_csv,
 
     plot,
-    colorschemes
+    plot_flat!,
+    plot_individual!,
+    colorschemes,
+
+    burnin
 
 
 BeadPos = MVector{3, Float64}
@@ -75,59 +83,23 @@ struct BeadPars
     west::Int
 end
 
-include("conf.jl")
-include("transformations.jl")
-include("lattice.jl")
-include("integrate/forces.jl")
+include("utils/quaternions.jl")
+
+include("initialise/lattice.jl")
+include("initialise/neighbours.jl")
+include("initialise/angles.jl")
+include("initialise/conf.jl")
+
+include("integrate/springs.jl")
+include("integrate/bending.jl")
+include("integrate/external_forces.jl")
 include("integrate/energy.jl")
 include("integrate/step.jl")
-include("integrate/orientation.jl")
-include("visuals.jl")
-include("utils.jl")
 
-"""
-    initialise(conf)::Tuple{Vector{Bead}, Dict{Bool,BondDirec}}
+include("simulate.jl")
 
-    Initialise the lattice and construct the bond directions
-"""
-function initialise(conf::RotationConfig)::Tuple{Vector{Bead}, Vector{BeadPars}, Dict{Bool,SMatrix{3,4, Float64}}} 
-    @unpack num_rings, S, N, a, dx = conf.lattice
-    beads, structure = create_lattice(num_rings, a, dx; S=S, N=N)
-
-    dirs = Dict(
-        true => bond_directions(conf.alpha),
-        false => bond_directions(conf.beta)
-    )
-
-    return beads, structure, dirs
-
-end
-
-function initialise(conf::PatchConfig)
-    @unpack N_lat, N_long, S, N, a, dx = conf.lattice
-    beads, structure = create_patch(N_lat, N_long, a, dx; S=S, N=N)
-
-    dirs = Dict(
-        true => bond_directions(conf.alpha),
-        false => bond_directions(conf.beta)
-    )
-
-    return beads, structure, dirs
-
-end
-
-
-function initialise_dimer(conf::RotationConfig)
-    @unpack S, N, a, dx = conf.lattice
-    beads, structure = create_dimer(a, dx; S=S, N=N)
-
-    dirs = Dict(
-        true => bond_directions(conf.alpha),
-        false => bond_directions(conf.beta)
-    )
-
-    return beads, structure, dirs
-
-end
+include("utils/visuals.jl")
+include("utils/measurements.jl")
+include("utils/io.jl")
 
 end

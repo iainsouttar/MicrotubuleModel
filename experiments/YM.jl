@@ -23,42 +23,16 @@ end
 
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/youngs_modulus.toml")
 conf = set_bond_angles(conf)
-beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
 
-@show microtubule_length(beads, conf.lattice) ≈ (conf.lattice.num_rings-1) *conf.lattice.a
-
-ym_conf = deepcopy(conf.external_force)
-conf = @set conf.external_force = MicrotubuleSpringModel.NoExternalForce()
-
-Nt = 2000
-step = 1
-time = 0:step:Nt
-E = zeros((6,Nt÷step+1))
-
-E[:,1] = total_energy(beads, bead_info, dirs, conf.spring_consts)
-@showprogress for i in 1:Nt
-    iterate!(beads, bead_info, dirs, conf, conf.iter_pars)
-    if i % step == 0
-        E[:,i÷step+1] = total_energy(beads, bead_info, dirs, conf.spring_consts)
-    end
-end
-
-beads_cpy = deepcopy(beads)
-bead_info_cpy = deepcopy(bead_info)
-
-CairoMakie.activate!()
-f = Figure(resolution=(1000,600))
-ax = Axis(f[1,1])
-MicrotubuleSpringModel.plot_E!(ax, time, E)
-f
+beads, bead_info, dirs = burnin(conf, 10_000)
 
 ###################################################################
 
-conf = @set conf.external_force = ym_conf
-
 L0 = microtubule_length(beads, conf.lattice)
 
-forces = 0.0:0.4:2.0
+ext = main!(beads, bead_info, 0.0, conf, dirs, step, Nt, L0)
+
+forces = 0.0:0.5:1.5
 Nt = 10_000
 step = 50
 time = 0:step:Nt
@@ -68,8 +42,11 @@ strain = zeros(length(forces))
 
 for (i,F) in enumerate(forces)
     ext = main!(beads, bead_info, F, conf, dirs, step, Nt, L0)
+    @info F, ext[end]
     strain[i] = ext[end] / L0
 end
+
+####################################################################
 
 using DataFrames, GLM, StatsBase
 
@@ -87,6 +64,7 @@ print(YM, " +/- " , err)
 
 x = 0.0:0.00001:maximum(stress)*1.05
 est = predict(sol, DataFrame(X=x), interval=:confidence)
+
 
 CairoMakie.activate!()
 f = Figure(resolution=(1000,600))

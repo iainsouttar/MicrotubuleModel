@@ -1,4 +1,29 @@
-function iterate!(beads, bead_info, dirs, conf, iter::StochEulerPars)
+"""
+    iterate!(
+        beads::Vector{Bead},
+        bead_info::Vector{BeadPars},
+        dirs::Dict{Bool,SMatrix{3,4,Float64}},
+        conf::Union{PatchConfig, RotationConfig},
+        iter::StochEulerPars
+    )
+
+Iterate the bead positions and orientations.
+
+Arguments:
+- `beads::Vector{Bead}`: mutable position and orientation info
+- `bead_info::Vector{BeadPars}`: lattice connections and tubulin type (alpha/beta)
+- `dirs::Dict{Bool,SMatrix{3,4,Float64}}`: natural bond angles 
+- `conf::Union{PatchConfig, RotationConfig}`: simulation parameters
+- `iter`: determines the integration scheme used.
+
+"""
+function iterate!(
+    beads::Vector{Bead},
+    bead_info::Vector{BeadPars},
+    dirs::Dict{Bool,SMatrix{3,4,Float64}},
+    conf::Union{PatchConfig,RotationConfig},
+    iter::StochEulerPars
+)
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
     N_tot = lastindex(beads)
     @unpack dt, damp_x, Tk_B = iter
@@ -14,7 +39,13 @@ function iterate!(beads, bead_info, dirs, conf, iter::StochEulerPars)
     end
 end
 
-function iterate!(beads, bead_info, dirs, conf, iter::EulerPars)
+function iterate!(
+    beads::Vector{Bead},
+    bead_info::Vector{BeadPars},
+    dirs::Dict{Bool,SMatrix{3,4,Float64}},
+    conf::Union{PatchConfig,RotationConfig},
+    iter::EulerPars
+)
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
     dt = iter.dt
     F = zeros(Float64, (3, lastindex(beads)))
@@ -28,7 +59,13 @@ function iterate!(beads, bead_info, dirs, conf, iter::EulerPars)
     end
 end
 
-@fastmath @inbounds function iterate!(beads, bead_info, dirs, conf, iter::RK4Pars)
+@fastmath @inbounds function iterate!(
+    beads::Vector{Bead},
+    bead_info::Vector{BeadPars},
+    dirs::Dict{Bool,SMatrix{3,4,Float64}},
+    conf::Union{PatchConfig,RotationConfig},
+    iter::RK4Pars
+)
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
     dt = iter.dt
     Ntot = lastindex(beads)
@@ -64,7 +101,35 @@ end
 end
 
 
-function forward(beads, bead_info, F, torque, dirs, conf)
+"""
+    forward(
+        beads::Vector{Bead},
+        bead_info::Vector{BeadPars},
+        F::Matrix{Float64},
+        torque::Matrix{Float64},
+        dirs::Dict{Bool,Union{AlphaConfirm, BetaConfirm}}, 
+        conf::Union{PatchConfig, RotationConfig},
+    )
+
+Iterate the bead positions and orientations.
+
+Arguments:
+- `beads::Vector{Bead}`: mutable position and orientation info
+- `bead_info::Vector{BeadPars}`: lattice connections and tubulin type (alpha/beta)
+- `F::Matrix{Float64}`: 3D force for each bead to be calculated
+- `torque::Matrix{Float64}`: 3D torques for each bead to be calculated
+- `dirs::Dict{Bool,SMatrix{3,4,Float64}}`: natural bond angles 
+- `conf::Union{PatchConfig, RotationConfig}`: simulation parameters
+
+"""
+function forward(
+    beads::Vector{Bead},
+    bead_info::Vector{BeadPars},
+    F::Matrix{Float64},
+    torque::Matrix{Float64},
+    dirs::Dict{Bool,SMatrix{3,4,Float64}}, 
+    conf::Union{PatchConfig, RotationConfig},
+)
     Ntot = lastindex(beads)
     x = Vector{BeadPos}(undef, Ntot)
     q = Vector{Quaternions.Quaternion}(undef, Ntot)
@@ -75,7 +140,7 @@ function forward(beads, bead_info, F, torque, dirs, conf)
     external_forces!(F, beads, bead_info, conf.external_force)
 
     @inbounds @fastmath @threads for i in 1:Ntot
-        x[i], q[i] = forward_(beads[i], F[:,i], torque[:,i], damp_x, damp_theta)
+        x[i], q[i] = calculcate_deltas(beads[i], F[:,i], torque[:,i], damp_x, damp_theta)
     end
     return x, q
 end
@@ -91,24 +156,15 @@ end
     end
 end
 
-function external_forces!(F, beads, bead_info, consts::IsotropicForce)
-    force = SVector{3,Float64}(consts.F, 0, 0)
-    @inbounds @fastmath for i in 1:lastindex(beads)
-        F[:,i] .+= force
-    end
-end
+"""
+    calculcate_deltas(b, F, τ, γ_x, γ_θ)
 
-function external_forces!(F, beads, bead_info, consts::YoungsModulusTest)
-    force = SVector{3,Float64}(0, 0, consts.F)
-    Ntot = lastindex(beads)
-    @inbounds @fastmath for i in 1:Ntot
-        F[:,i] .+= force*(i>Ntot-consts.N-1)
-    end
-end
+Calculate the change in the position and orientation for the next timestep.
+Returns Δx, Δq.
+Ensures the orientation is normalized first
 
-function external_forces!(F, beads, bead_info, consts::NoExternalForce) end
-
-@inline function forward_(b, F, τ, γ_x, γ_θ)
+"""
+@inline function calculcate_deltas(b, F, τ, γ_x, γ_θ)
     q = sign(b.q)
     q_τ = quat(0, τ...)
     spin = 0.5 * q * q_τ 

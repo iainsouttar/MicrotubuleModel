@@ -71,26 +71,15 @@ fig
 
 
 
-
+########################################################################
 
 GLMakie.activate!()
 GLMakie.closeall()
-scene = plot(lattice, dirs)
+scene = plot(beads, bead_info, dirs)
 
 using MicrotubuleSpringModel: NATURE
 
 c = [NATURE.colors[3],NATURE.colors[4],NATURE.colors[5],NATURE.colors[6]]
-
-for (i,b) in enumerate(lattice)
-    lat, long = b.lat_nn, b.long_nn
-    intra = b.intra_nn
-    bonds = [intra,lat[2],long, lat[1]]
-    for (j,(bond,dir)) in enumerate(zip(bonds,eachcol(dirs[b.α])))
-        if bond != 0
-            arrows!(scene, [Point3f(b.x)], Vector{Vec{3, Float32}}([5.5*nhat[:,j, i]]), linewidth=0.35, arrowsize=0.5, color=c[j])
-        end
-    end
-end
 
 
 F = zeros(Float64, (3, lastindex(lattice)))

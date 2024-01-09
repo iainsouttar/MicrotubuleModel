@@ -3,6 +3,17 @@
 
 @fastmath spring_energy(r::Real, l0::Real, k::Real) = 0.5*k*(r-l0)^2
 
+"""
+    bead_energy(b1::Bead,
+        beads::Vector{Bead},
+        b_info::BeadPars,
+        dirs,
+        consts::SpringConst
+    )
+
+    Calculate the components of the total energy for the whole lattice.
+    Returns E = [lin lateral, lin intrinsic, lin longitudinal, bend lateral, bend intrinsic, bend longitudinal]
+"""
 function bead_energy(
     b1::Bead,
     beads::Vector{Bead},

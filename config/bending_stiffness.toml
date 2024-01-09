@@ -1,7 +1,7 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 10
+num_rings = 20
 a = 4.05
 dx = 5.13
 
@@ -23,5 +23,5 @@ l0_in = 4.05
 l0_in_kin = 4.5
 
 
-[external_force.youngs_modulus]
-F = 0.5
+[external_force.bending_stiffness]
+F = 0.05

@@ -25,18 +25,17 @@ function to_axis_angle(q::Quaternions.Quaternion)
 end
 
 function direc_from_angles(t::BondAngle)
-    x = cos(t.θ)*sin(t.ϕ)
-    y = sin(t.θ)*sin(t.ϕ)
-    z = cos(t.ϕ)
-    return BondDirec(x, y, z)
+    s_θ, c_θ = sincos(t.θ)
+    s_ϕ, c_ϕ = sincos(t.ϕ)
+    return BondDirec(c_θ*s_ϕ, s_θ*s_ϕ, c_ϕ)
 end
 
 function transform_orientation(v::BondDirec, q::Quaternions.Quaternion)
-    v_ = quat(0,v...)
+    v_ = quat(0, v...)
     return @fastmath conj(q) * v_ * q
 end
 
 function orientate_vector(v::BondDirec, q::Quaternions.Quaternion)
     q_prime = transform_orientation(v, q)
-    return @fastmath LinearAlgebra.normalize(BondDirec(imag_part(q_prime)))
+    return @fastmath normalize(BondDirec(imag_part(q_prime)))
 end
