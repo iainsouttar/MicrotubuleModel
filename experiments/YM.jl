@@ -7,11 +7,11 @@ else
     using MicrotubuleSpringModel
 end
 
-function main!(beads, bead_info, F, conf, dirs, step, Nt, L0)
+function main!(beads, bead_info, F, conf, step, Nt, L0)
     ext = zeros(Nt÷step+1)
     conf = @set conf.external_force = MicrotubuleSpringModel.YoungsModulusTest(F, 13)
     @showprogress for i in 1:Nt
-        iterate!(beads, bead_info, dirs, conf, conf.iter_pars)
+        iterate!(beads, bead_info, conf, conf.iter_pars)
         if i % step == 0
             ext[i÷step+1] = microtubule_length(beads, conf.lattice) - L0
         end
@@ -24,13 +24,13 @@ end
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/youngs_modulus.toml")
 conf = set_bond_angles(conf)
 
-beads, bead_info, dirs = burnin(conf, 10_000)
+beads, bead_info = burnin(conf, 2_000)
 
 ###################################################################
 
 L0 = microtubule_length(beads, conf.lattice)
 
-ext = main!(beads, bead_info, 0.0, conf, dirs, step, Nt, L0)
+ext = main!(beads, bead_info, 0.0, conf, step, Nt, L0)
 
 forces = 0.0:0.5:1.5
 Nt = 10_000
@@ -41,7 +41,7 @@ stress = forces ./ surface_area(10.61,2)
 strain = zeros(length(forces))
 
 for (i,F) in enumerate(forces)
-    ext = main!(beads, bead_info, F, conf, dirs, step, Nt, L0)
+    ext = main!(beads, bead_info, F, conf, step, Nt, L0)
     @info F, ext[end]
     strain[i] = ext[end] / L0
 end

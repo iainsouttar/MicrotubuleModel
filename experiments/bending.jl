@@ -10,18 +10,20 @@ end
 function main!(F, conf, num_rings, step, Nt)
     conf = @set conf.lattice.num_rings = num_rings
 
-    beads, bead_info, dirs = burnin(conf, 500)
+    beads, bead_info = burnin(conf, 500)
 
     L0 = microtubule_length(beads, conf.lattice)
     N = conf.lattice.N
     Ntot = lastindex(beads)
+    time = collect(0:step:Nt)
+    deflection = zeros(length(time))
 
     original = deepcopy(beads[Ntot-N:end])
     
-    conf = @set conf.external_force = ym_conf
+    #conf = @set conf.external_force = ym_conf
 
     @showprogress for i in 1:Nt
-        iterate!(beads, bead_info, dirs, conf, conf.iter_pars)
+        iterate!(beads, bead_info, conf, conf.iter_pars)
         if i % step == 0
             deflection[i÷step+1] = deflection_end(beads, original)
         end

@@ -29,9 +29,10 @@ function iterate!(
     @unpack dt, damp_x, Tk_B = iter
     σ_x = sqrt(dt*2*Tk_B*damp_x)
     F = zeros(Float64, (3, N_tot))
+    F_ = zeros(Float64, (3, 4, lastindex(beads)))
     torque = similar(F)
     
-    Δx, Δq = forward(beads, bead_info, F, torque, conf)
+    Δx, Δq = forward(beads, bead_info, F, F_, torque, conf)
     ΔW = σ_x*randn((3,N_tot))
     @inbounds @fastmath @threads for i in 1:N_tot
         beads[i].x += (i>N)*(Δx[i]*dt .+ ΔW[:,i])
