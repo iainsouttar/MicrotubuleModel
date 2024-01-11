@@ -17,8 +17,6 @@ end
     @test bead_info[5].α == false
     @test bead_info[23].α == true
     @test bead_info[3*13+5].α == true
-    
-    #@test lattice[14].θ == BeadAngle(0,0,0)
 
     pos = [b.x for b in lattice]
     distances = reshape([dot(x1-x2,x1-x2) for x1 in pos for x2 in pos],(Ntot,Ntot))

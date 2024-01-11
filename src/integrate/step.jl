@@ -154,6 +154,7 @@ end
     K = consts.K
     N = lastindex(beads)
 
+    # this loop could possibly be much faster if distributed over many threads
     @inbounds @fastmath @threads for i in 1:N
         b = bead_info[i]
         bonds = beads[b.bonds]

@@ -5,8 +5,8 @@ Set position of the bead in a lattice.
 """
 function set_pos(θ::Real, idx::Int, R::Real, r::Real; θ_0=0.0, z_0=0.0, N=13)::BeadPos
     return BeadPos(
-        R*cos(θ_0+θ),
-        R*sin(θ_0+θ),
+        R*cos(θ_0-θ),
+        R*sin(θ_0-θ),
         z_0 + mod(idx-1,N)*r
     )
 end

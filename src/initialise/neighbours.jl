@@ -7,16 +7,16 @@ Return neighbours in the lateral direction for bead `idx` of `total`
 function lateral_nn(idx::Int, total::Int)::Tuple{Int,Int}
     if idx % 13 == 0 
         if idx > total-2*13-1
-            return (idx-1, 0)
+            return (0, idx-1)
         end
-        return (idx-1, idx+1+2*13)
+        return (idx+1+2*13, idx-1)
     elseif idx % 13 == 1
         if idx < 2*13+1
-            return (0, idx+1)
+            return (idx+1, 0)
         end
-        return (idx-1-2*13, idx+1)
+        return (idx+1, idx-1-2*13)
     end
-    return (idx-1, idx+1)
+    return (idx+1, idx-1)
 end
 
 """
@@ -40,11 +40,11 @@ Return neighbours in the lateral direction for bead `idx` of `total` in a patch
 """
 function lateral_nn_patch(idx::Int, N_lat::Int)::Tuple{Int,Int}
     if idx % N_lat == 0 
-        return (idx-1, 0)
+        return (0, idx-1)
     elseif idx % N_lat == 1
-        return (0, idx+1)
+        return (idx+1, 0)
     end
-    return (idx-1, idx+1)
+    return (idx+1, idx-1)
 end
 
 

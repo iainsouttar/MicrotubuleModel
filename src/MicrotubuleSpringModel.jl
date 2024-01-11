@@ -73,6 +73,7 @@ mutable struct Bead
     kinesin::Bool
 end
 
+
 # three vector for position and for orientation angles
 # alpha true for alpha monomer, false for beta monomer 
 struct BeadPars

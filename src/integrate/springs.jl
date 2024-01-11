@@ -10,6 +10,7 @@ function linear_forces(
     b_info::BeadPars
 )
     F = MVector{3,Float64}(0,0,0)
+    # loop over the bond  parameters and neighbour bead positions
     for (k, l0, b) in zip(b_info.consts, b_info.lengths, bonds)
         F += spring_force(b.x - b1.x, l0, k)
     end
