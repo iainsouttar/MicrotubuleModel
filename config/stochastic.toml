@@ -1,12 +1,12 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 20
+num_rings = 50
 a = 4.05
 dx = 5.13
 
 [iter_pars.stoch_euler]
-dt = 0.2
+dt = 0.5
 Tk_B = 0.004143
 #Tk_B = 0.015143
 damp_x = 0.1326

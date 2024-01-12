@@ -13,9 +13,9 @@ else
     using MicrotubuleSpringModel
 end
 
-Nt = 100_000
+Nt = 50_000
 stp = 200
-filename = "fluctuations.csv"
+filename = "fluctuations2.csv"
 path = "results/raw"
 
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")

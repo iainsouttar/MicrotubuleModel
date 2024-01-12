@@ -11,12 +11,12 @@ function microtubule_length(beads, consts)
 end
 
 
-function deflection_end(beads, original)
+function deflection_end(x, original)
     N = length(original)
-    Ntot = lastindex(beads)
-    last = @view beads[Ntot-N:end]
+    Ntot = length(x)
+    last = @view x[Ntot-N:end]
     # average transverse distance between the end ring and its original position
-    tot = mapreduce((a,b)->abs(a.x[1]-b.x[1]), +, original, last)
+    tot = mapreduce((a,b)->abs(a[1]-b[1]), +, original, last)
     return tot / N
 end
 

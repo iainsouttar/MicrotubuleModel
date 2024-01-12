@@ -5,9 +5,8 @@ num_rings = 200
 a = 4.05
 dx = 5.13
 
-[iter_pars.stoch_euler]
+[iter_pars.euler]
 dt = 0.2
-Tk_B = 0.004143
 damp_x = 0.1326
 damp_theta = 0.02487
 
