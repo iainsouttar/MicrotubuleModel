@@ -24,6 +24,13 @@ function GLMakie.plot(lattice::Vector{Bead}, info::Vector{BeadPars}, dirs; a=4.0
     return scene
 end
 
+function GLMakie.plot(lattice::Lattice, info::Vector{BeadPars}; a=4.05, l=4.0)
+    scene = Scene(resolution=(1200,900), backgroundcolor=colorant"#111111")
+    cam3d!(scene)
+    plot!(scene, lattice, info; a=a, l=l)
+    return scene
+end
+
 
 function GLMakie.plot!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}; a=8.05)
     for (b,b_) in zip(lattice, info)
@@ -34,6 +41,17 @@ function GLMakie.plot!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}; a=8
     center!(scene)
     return scene
 end
+
+
+# function GLMakie.plot!(scene, lattice::Lattice, info::Vector{BeadPars}; a=8.05)
+#     for (x,b_) in zip(lattice.x, info)
+#         mesh!(scene, Sphere(Point3f(x), a/4), color=COLORS[(b_.α, b.kinesin)], shininess=32.0)
+#     end
+
+#     GLMakie.scale!(scene, 0.05, 0.05, 0.05)
+#     center!(scene)
+#     return scene
+# end
 
 function GLMakie.plot!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}, dirs; a=4.05, l=4.0)
     c = [NATURE.colors[3],NATURE.colors[4],NATURE.colors[5],NATURE.colors[6]]
@@ -51,10 +69,44 @@ function GLMakie.plot!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}, dir
 end
 
 
+function GLMakie.plot!(scene, lattice::Lattice, info::Vector{BeadPars}; a=4.05, l=4.0)
+    c = [NATURE.colors[3],NATURE.colors[4],NATURE.colors[5],NATURE.colors[6]]
+
+    for (x, q, b_) in zip(lattice.x, lattice.q, info)
+        for (i,bond) in enumerate(b_.directions)
+            v = MicrotubuleSpringModel.transform_orientation(bond,q)
+            v_ = l*normalize([imag_part(v)...])
+            arrows!(scene, [Point3f(x)], Vector{Vec{3, Float32}}([v_]), linewidth=0.2, color=c[i], arrowsize=0.3)
+        end
+    end
+
+    for (x,kin, b_) in zip(lattice.x, lattice.kinesin, info)
+        mesh!(scene, Sphere(Point3f(x), a/4), color=COLORS[(b_.α, kin)], shininess=32.0)
+    end
+
+    GLMakie.scale!(scene, 0.05, 0.05, 0.05)
+    center!(scene)
+    return scene
+end
+
+
 function plot_individual!(scene, lattice::Vector{Bead}, info::Vector{BeadPars}; a=8.05)
     beads = []
     for (b,b_) in zip(lattice, info)
-        bead = mesh!(scene, Sphere(Point3f(b.x), a/2), color=COLORS[(b_.α, b.kinesin)], shininess=32.0)
+        bead = mesh!(scene, Sphere(Point3f(b.x), a/4), color=COLORS[(b_.α, b.kinesin)], shininess=32.0)
+        push!(beads, bead)
+    end
+
+    GLMakie.scale!(scene, 0.05, 0.05, 0.05)
+    center!(scene)
+    return beads
+end
+
+function plot_individual!(scene, x; a=8.05)
+    beads = []
+    colors = Dict(true=>NATURE.colors[1], false=>NATURE.colors[2])
+    for (i,x_i) in enumerate(x)
+        bead = mesh!(scene, Sphere(Point3f(x_i), a/2), color=colors[iseven(i÷13)], shininess=32.0)
         push!(beads, bead)
     end
 

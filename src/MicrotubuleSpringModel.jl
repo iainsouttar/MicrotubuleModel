@@ -10,7 +10,7 @@ using Random
 using Quaternions
 using Configurations: @option, to_toml
 using Setfield: @set
-using LoopVectorization: @tturbo
+using LoopVectorization: @tturbo, @avx, @turbo
 using DelimitedFiles
 using CSV
 using DataFrames
@@ -72,6 +72,21 @@ mutable struct Bead
     q::Quaternions.Quaternion
     kinesin::Bool
 end
+
+mutable struct Lattice{N}
+    x::MVector{N, BeadPos}
+    q::Vector{Quaternions.Quaternion}
+    kinesin::MVector{N, Bool}
+end
+
+function Lattice(x, q, kinesin)
+    N = length(kinesin)
+    return Lattice{N}(x, q, kinesin)
+end
+
+Base.size(l::Lattice) = size(l.kinesin)
+
+Base.length(l::Lattice) = length(l.kinesin)
 
 
 # three vector for position and for orientation angles

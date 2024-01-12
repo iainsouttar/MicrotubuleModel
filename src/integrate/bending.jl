@@ -23,14 +23,14 @@ end
 
 Calculate 3D torque and force acting on bead `b1` and its neighbours due to the bond angle bending at `b1`. Updates overall force vectors and returns torque on b1.
 """
-function angular_forces(b1, bonds, dirs, K)
+function angular_forces(x, q, bonds, dirs, K)
     F_ = MMatrix{3, 4, Float64}(undef)
     torque = MVector{3,Float64}(0,0,0)
     F1 = MVector{3,Float64}(0,0,0)
     for (i,dir) in enumerate(dirs)
         # transform bond direction according to bead orientation
-        v = orientate_vector(dir, sign(b1.q))
-        @fastmath r = bonds[i].x - b1.x
+        v = orientate_vector(dir, sign(q))
+        @fastmath r = bonds[i] - x
         # torque from diff between rest direction v and actual r
         τ, F = torque_and_force(v, r, K)
         @. F_[:,i] = -F

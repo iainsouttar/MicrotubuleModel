@@ -1,39 +1,21 @@
 using Logging
-using FilePaths; using FilePathsBase: /
 using Parameters: @unpack
 using ProgressMeter
-using CairoMakie
-using LaTeXStrings
-
-using StaticArrays
-using LinearAlgebra
-using LinearAlgebra: normalize, norm
-using Distributions
-using Colors
-using GLMakie
 using Configurations
-using Setfield
 
-using Quaternions
-using Quaternions: Quaternion
 
 #  VS Code workaround: https://github.com/julia-vscode/julia-vscode/issues/800
 if isdefined(@__MODULE__, :LanguageServer)
     @info "Using VS Code workaround..."
-    include("src/MicrotubuleSpringModel.jl")
+    include("../src/MicrotubuleSpringModel.jl")
     using .MicrotubuleSpringModel
 else
     using MicrotubuleSpringModel
 end
 
-using ColorSchemes
-theme = include("scripts/theme.jl")
-theme isa Attributes && set_theme!(theme)
-
-
 Nt = 100_000
 stp = 200
-filename = "test5.csv"
+filename = "fluctuations.csv"
 path = "results/raw"
 
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")

@@ -1,13 +1,12 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 200
+num_rings = 10
 a = 4.05
 dx = 5.13
 
-[iter_pars.stoch_euler]
-dt = 0.2
-Tk_B = 0.004143
+[iter_pars.euler]
+dt = 0.1
 damp_x = 0.1326
 damp_theta = 0.02487
 
@@ -24,5 +23,5 @@ l0_in = 4.05
 l0_in_kin = 4.5
 
 
-[external_force.bending_stiffness]
-F = 0.05
+[external_force.youngs_modulus_pf]
+F = 0.1

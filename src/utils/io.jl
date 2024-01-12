@@ -8,6 +8,15 @@ function save_to_csv(filename::String, df::DataFrame, x::Vector; path="results/p
     CSV.write(path*"/"*filename, df, header=header)
 end
 
+function append_to_csv(filename::String, x, path="results/raw")
+    data = Matrix{Float64}(zeros(Float64, (1,length(x)*3)))
+    for i in 1:lastindex(x)
+        data[1,3*(i-1)+1:3*i] .= x[i]
+    end
+    open(path*"/"*filename, "a") do io
+        writedlm(io, data, ',')
+    end
+end
 
 function save_to_csv(filename::String, x::Vector, ys; path="results/processed")
     data = hcat(x, ys...)

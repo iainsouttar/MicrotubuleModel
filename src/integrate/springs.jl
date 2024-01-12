@@ -5,14 +5,14 @@
 Calculate 3D force acting on bead `b1` due to the linear spring attaching its neighbours.
 """
 function linear_forces(
-    b1::Bead,
+    x::BeadPos,
     bonds,
     b_info::BeadPars
 )
     F = MVector{3,Float64}(0,0,0)
     # loop over the bond  parameters and neighbour bead positions
     for (k, l0, b) in zip(b_info.consts, b_info.lengths, bonds)
-        F += spring_force(b.x - b1.x, l0, k)
+        F += spring_force(b - x, l0, k)
     end
     return F
 end

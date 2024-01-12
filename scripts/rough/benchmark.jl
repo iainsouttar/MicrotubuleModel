@@ -27,7 +27,7 @@ conf = set_bond_angles(conf)
 
 beads, bead_info = MicrotubuleSpringModel.initialise(conf)
 
-@benchmark iterate!($beads, $bead_info, $conf, $conf.iter_pars)
+@benchmark iterate!($beads, $bead_info, $conf, $conf.iter_pars) samples=500
 
 #######################################################
 

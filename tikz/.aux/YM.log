@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10.12) (preloaded format=pdflatex 2023.11.22)  5 JAN 2024 12:13
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10.12) (preloaded format=pdflatex 2023.11.22)  12 JAN 2024 14:03
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -410,9 +410,9 @@ File: translations-basic-dictionary-english.trsl (english translation file `tran
 )
 Package translations Info: loading dictionary `translations-basic-dictionary' for `english'. on input line 10.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 29.
+(Font)              <7> on input line 25.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 29.
+(Font)              <5> on input line 25.
  [1
 
 {C:/Users/jeremy/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] (c:\Users\jeremy\OneDrive\Microtubules\MicrotubuleSpringModel\tikz\.aux\YM.aux)
@@ -422,15 +422,15 @@ L3 programming layer <2023-11-09>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 27164 strings out of 474587
- 742697 string characters out of 5745221
- 13923558 words of memory out of 24000000
- 48973 multiletter control sequences out of 15000+600000
+ 27167 strings out of 474587
+ 742794 string characters out of 5745221
+ 15262207 words of memory out of 24000000
+ 48976 multiletter control sequences out of 15000+600000
  558069 words of font info for 36 fonts, out of 12000000 for 9000
  1141 hyphenation exceptions out of 8191
  117i,18n,121p,788b,2454s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/jeremy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/jeremy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/jeremy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/jeremy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/jeremy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on c:\Users\jeremy\OneDrive\Microtubules\MicrotubuleSpringModel\tikz\.aux\YM.pdf (1 page, 64621 bytes).
+Output written on c:\Users\jeremy\OneDrive\Microtubules\MicrotubuleSpringModel\tikz\.aux\YM.pdf (1 page, 92251 bytes).
 PDF statistics:
  34 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

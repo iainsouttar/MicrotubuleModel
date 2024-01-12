@@ -13,18 +13,20 @@ function external_forces!(F, beads, bead_info, consts::IsotropicForce)
 end
 
 function external_forces!(F, beads, bead_info, consts::YoungsModulusTest)
-    force = SVector{3,Float64}(0, 0, consts.F)
-    Ntot = lastindex(beads)
-    @inbounds @fastmath for i in 1:Ntot
-        F[:,i] .+= force*(i>Ntot-consts.N-1)
+    Ntot = length(beads)
+    @inbounds @fastmath for i in Ntot-consts.N-1:Ntot
+        F[3,i] += consts.F
     end
 end
 
+function external_forces!(F, beads, bead_info, consts::YoungsModulusPF)
+    F[3,end] += consts.F
+end
+
 function external_forces!(F, beads, bead_info, consts::BendingStiffnessTest)
-    force = SVector{3,Float64}(consts.F, 0, 0)
-    Ntot = lastindex(beads)
-    @inbounds @fastmath for i in 1:Ntot
-        F[:,i] .+= force*(i>Ntot-consts.N-1)
+    Ntot = length(beads)
+    @inbounds @fastmath for i in Ntot-consts.N-1:Ntot
+        F[1,i] += consts.F
     end
 end
 

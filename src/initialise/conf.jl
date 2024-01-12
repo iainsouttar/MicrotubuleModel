@@ -61,6 +61,11 @@ end
     N::Int = 13
 end
 
+@option "youngs_modulus_pf" struct YoungsModulusPF
+    F::Float64 = 1.0
+    N::Int = 13
+end
+
 @option "bending_stiffness" struct BendingStiffnessTest
     F::Float64 = 1.0
     N::Int = 13
@@ -91,16 +96,17 @@ Full lattice and simulation parameters
     external_force::Union{
         NoExternalForce, 
         IsotropicForce, 
-        YoungsModulusTest, 
+        YoungsModulusTest,
+        YoungsModulusPF,
         BendingStiffnessTest}
 end
 
 """
-    initialise(conf)::Tuple{Vector{Bead}, Dict{Bool,BondDirec}}
+    initialise(conf)::Tuple{Lattice, Dict{Bool,BondDirec}}
 
     Initialise the lattice and construct the bond directions
 """
-function initialise(conf::RotationConfig)::Tuple{Vector{Bead}, Vector{BeadPars}}
+function initialise(conf::RotationConfig)::Tuple{Lattice, Vector{BeadPars}}
     @unpack num_rings, S, N, a, dx = conf.lattice
 
     dirs = Dict(
@@ -116,12 +122,27 @@ end
 
 function initialise_dimer(conf::RotationConfig)
     @unpack S, N, a, dx = conf.lattice
-    beads, structure = create_dimer(a, dx; S=S, N=N)
 
     dirs = Dict(
         true => bond_directions(conf.alpha),
         false => bond_directions(conf.beta)
     )
+
+    beads, structure = create_dimer(dirs, conf.spring_consts, a, dx; S=S, N=N)
+
+    return beads, structure, dirs
+
+end
+
+function initialise_PF(conf::RotationConfig)
+    @unpack S, N, a, dx, num_rings = conf.lattice
+
+    dirs = Dict(
+        true => bond_directions(conf.alpha),
+        false => bond_directions(conf.beta)
+    )
+
+    beads, structure = create_PF(dirs, conf.spring_consts, num_rings, a, dx; S=S, N=N)
 
     return beads, structure, dirs
 

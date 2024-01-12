@@ -26,7 +26,8 @@ Construct a lattice of beads connected by springs.
 - `Vector{Bead}`: lattice of connected beads
 """
 function create_patch(dirs, consts, N_lat::Int, N_long::Int, a::Real, δx::Real; S::Int=3, N::Int=13)
-    beads = Vector{Bead}(undef,N_lat*N_long)
+    #beads = Vector{Bead}(undef,N_lat*N_long)
+    #lattice = Lattice{Int(N_lat*N_long)}()
     bead_info = Vector{BeadPars}(undef,N_lat*N_long)
 
     r = S*a/N
@@ -36,6 +37,8 @@ function create_patch(dirs, consts, N_lat::Int, N_long::Int, a::Real, δx::Real;
     vertical_offset = repeat(0:N_long-1,inner=N_lat)
 
     x = [set_pos(θ, idx, R, r, z_0=a*z, N=N_lat) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
+    q = Vector{Quaternions.Quaternion}(undef, N_lat*N_long)
+    kinesin = MVector{N_lat*N_long, Bool}(zeros(Bool,N_lat*N_long))
     alpha = reshape([Bool(z%2==1) for z in vertical_offset], (N_lat,N_long))
 
     for i in 1:N_long
@@ -48,8 +51,9 @@ function create_patch(dirs, consts, N_lat::Int, N_long::Int, a::Real, δx::Real;
                 (north, south) = long_nn_patch(idx, N_lat, N_long)
             end
 
-            q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
-            beads[idx] = Bead(x[idx], q, false)
+            q[idx] = quat_from_axisangle([0,0,1],-π/2+angles[idx])
+            #beads[idx] = Bead(x[idx], q, false)
+            #q[idx] = q
 
             bonds = [north, lat[2], south, lat[1]]
 
@@ -71,7 +75,9 @@ function create_patch(dirs, consts, N_lat::Int, N_long::Int, a::Real, δx::Real;
             )
         end
     end
-    return beads, bead_info
+
+
+    return Lattice(x, q, kinesin), bead_info
 end
 
 
@@ -91,34 +97,73 @@ Construct a full lattice of beads connected by springs.
 create_lattice(dirs, consts, num_rings, a, δx; S::Int=3, N::Int=13) = create_patch(dirs, consts, N, num_rings, a, δx; S=S, N=N)
 
 
-# function create_dimer(a::Real, δx::Real; S::Int=3, N::Int=13)
-#     beads = Vector{Bead}(undef,2)
-#     bead_info = Vector{BeadPars}(undef,2)
+function create_dimer(dirs, consts, a::Real, δx::Real; S::Int=3, N::Int=13)
+    bead_info = Vector{BeadPars}(undef,2)
 
-#     r = S*a/N
-#     R = N*δx/2π
+    r = S*a/N
+    R = N*δx/2π
 
-#     angles = range(0.0,2π*(N-1)/N,N)[1:2]
-#     vertical_offset = [0,0]
+    angles = [0.0,0.0]#range(0.0,2π*(N-1)/N,N)[1:13:14]
+    vertical_offset = [0,1]
 
-#     x = [set_pos(θ, idx, R, r, z_0=a*z, N=N) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
-#     q = quat_from_axisangle([0,0,1],-π/2)
-#     # q = quat_from_axisangle([0,0,1],-π/2-angles[idx])
+    x = [BeadPos(0,0,0), BeadPos(0,0,a)]
+    #x = [set_pos(θ, idx, R, r, z_0=a*z, N=N) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
+    q = quat_from_axisangle([0,0,1],-π/2)
+    kinesin = [false, false]
 
-#     beads[1] = Bead(x[1], copy(q), false)
-#     beads[2] = Bead(x[2], copy(q), false)
+    @unpack k_in, l0_in = consts
 
-#     bead_info[1] = BeadPars(
-#         false,
-#         [2],
+    bead_info[1] = BeadPars(
+        false, 
+        [2],
+        [dirs[false][1]],
+        [k_in],
+        [l0_in]
+    )
+    bead_info[2] = BeadPars(
+        true, 
+        [1],
+        [dirs[true][3]],
+        [k_in],
+        [l0_in]
+    )
+    return Lattice(x, [q,q], kinesin), bead_info
+end
 
-#         0, 2, 0, 0
-#     )
-#     bead_info[2] = BeadPars(
-#         false, 
-#         [1],
 
-#         0, 0, 0, 1
-#     )
-#     return beads, bead_info
-# end
+
+function create_PF(dirs, consts, n::Int, a::Real, δx::Real; S::Int=3, N::Int=13)
+    bead_info = Vector{BeadPars}(undef,n)
+
+    x = [BeadPos(0,0,i*a) for i in 0:n-1]
+
+    q = quat_from_axisangle([0,0,1],-π/2)
+    kinesin = [false for i in 1:n]
+
+    @unpack k_in, l0_in = consts
+
+    bead_info[1] = BeadPars(
+        false, 
+        [2],
+        [dirs[false][1]],
+        [k_in],
+        [l0_in]
+    )
+    for i in 2:n-1
+        bead_info[i] = BeadPars(
+            Bool(i%2==0), 
+            [i+1,i-1],
+            [dirs[Bool(i%2==0)][1],dirs[Bool(i%2==0)][3]],
+            [k_in, k_in],
+            [l0_in, l0_in]
+        )
+    end
+    bead_info[n] = BeadPars(
+        true, 
+        [n-1],
+        [dirs[true][3]],
+        [k_in],
+        [l0_in]
+    )
+    return Lattice(x, [q for i in 1:n], kinesin), bead_info
+end

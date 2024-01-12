@@ -18,88 +18,93 @@ Arguments:
 
 """
 function iterate!(
-    beads::Vector{Bead},
+    lattice::Lattice,
     bead_info::Vector{BeadPars},
-    #dirs::Dict{Bool,SMatrix{3,4,Float64}},
     conf::Union{PatchConfig,RotationConfig},
     iter::StochEulerPars
 )
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
-    N_tot = lastindex(beads)
+    Ntot = length(lattice)
     @unpack dt, damp_x, Tk_B = iter
     σ_x = sqrt(dt*2*Tk_B*damp_x)
-    F = zeros(Float64, (3, N_tot))
-    F_ = zeros(Float64, (3, 4, lastindex(beads)))
+    F = zeros(Float64, (3, Ntot))
+    F_ = zeros(Float64, (3, 4, Ntot))
     torque = similar(F)
+
+    updateable = (collect(1:Ntot) .> N)
     
-    Δx, Δq = forward(beads, bead_info, F, F_, torque, conf)
-    ΔW = σ_x*randn((3,N_tot))
-    @inbounds @fastmath @threads for i in 1:N_tot
-        beads[i].x += (i>N)*(Δx[i]*dt .+ ΔW[:,i])
-        beads[i].q += (i>N)*Δq[i]*dt
+    Δx, Δq = forward(lattice, bead_info, F, F_, torque, conf)
+    ΔW = σ_x*randn((3,Ntot))
+    @inbounds @fastmath @threads for i in 1:Ntot
+        lattice.x[i] .+= updateable[i]*(Δx[:,i]*dt .+ ΔW[:,i])
+        lattice.q[i] += updateable[i]*Δq[i]*dt
     end
 end
 
 function iterate!(
-    beads::Vector{Bead},
+    lattice::Lattice,
     bead_info::Vector{BeadPars},
-    #dirs::Dict{Bool,SMatrix{3,4,Float64}},
     conf::Union{PatchConfig,RotationConfig},
     iter::EulerPars
 )
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
     dt = iter.dt
-    F = zeros(Float64, (3, lastindex(beads)))
-    F_ = zeros(Float64, (3, 4, lastindex(beads)))
+    Ntot = length(lattice)
+    F = zeros(Float64, (3, Ntot))
+    F_ = zeros(Float64, (3, 4, Ntot))
     torque = similar(F)
     
-    Δx, Δq = forward(beads, bead_info, F, F_, torque, conf)
-
-    @inbounds @fastmath @threads for i in 1:lastindex(beads)
-        beads[i].x += (i>N)*Δx[i]*dt
-        beads[i].q += (i>N)*Δq[i]*dt
-    end
+    Δx, Δq = forward(lattice, bead_info, F, F_, torque, conf)
+    updateable = (collect(1:Ntot) .> N)
+    #updateable = ones(Bool, Ntot)
+    #updateable[1] = false
+    update!(lattice, updateable, Δx, Δq, dt)
 end
 
-@fastmath @inbounds function iterate!(
-    beads::Vector{Bead},
+function iterate!(
+    lattice::Lattice,
     bead_info::Vector{BeadPars},
-    #dirs::Dict{Bool,SMatrix{3,4,Float64}},
     conf::Union{PatchConfig,RotationConfig},
     iter::RK4Pars
 )
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
     dt = iter.dt
-    Ntot = lastindex(beads)
-    F = zeros(Float64, (3, lastindex(beads)))
-    F_ = zeros(Float64, (3, 4, lastindex(beads)))
+    Ntot = length(lattice)
+    F = zeros(Float64, (3, Ntot))
+    F_ = zeros(Float64, (3, 4, Ntot))
     torque = similar(F)
-    b = deepcopy(beads)
+    lattice_cpy = deepcopy(lattice)
 
     N *= 1
-    
-    k1x, k1q = forward(b, bead_info, F, F_, torque, conf)
-    @threads for i in 1:Ntot
-        b[i].x = beads[i].x + (i>N)*k1x[i]*dt/2
-        b[i].q = beads[i].q + (i>N)*k1q[i]*dt/2
-    end
-    k2x, k2q = forward(b, bead_info, F, F_, torque, conf)
-    @threads for i in 1:Ntot
-        b[i].x = beads[i].x + (i>N)*k2x[i]*dt/2
-        b[i].q = beads[i].q + (i>N)*k2q[i]*dt/2
-    end
-    k3x, k3q = forward(b, bead_info, F, F_, torque, conf)
-    @threads for i in 1:Ntot
-        b[i].x = beads[i].x + (i>N)*k3x[i]*dt
-        b[i].q = beads[i].q + (i>N)*k3q[i]*dt
-    end
-    k4x, k4q = forward(b, bead_info, F, F_, torque, conf)
 
-    k_x = @. (k1x + 2*k2x + 2*k3x + k4x)*dt/6
-    k_q = @. (k1q + 2*k2q + 2*k3q + k4q)*dt/6
-    @threads for i in 1:Ntot
-        beads[i].x = beads[i].x + (i>N)*k_x[i]
-        beads[i].q = beads[i].q + (i>N)*k_q[i]
+    updateable = ((1:Ntot) .> N)
+    
+    k1x, k1q = forward(lattice_cpy, bead_info, F, F_, torque, conf)
+    update!(lattice_cpy, lattice, updateable, k1x, k1q, dt/2)
+
+    k2x, k2q = forward(lattice_cpy, bead_info, F, F_, torque, conf)
+    update!(lattice_cpy, lattice, updateable, k2x, k2q, dt/2)
+
+    k3x, k3q = forward(lattice_cpy, bead_info, F, F_, torque, conf)
+    update!(lattice_cpy, lattice, updateable, k3x, k3q, dt)
+
+    k4x, k4q = forward(lattice_cpy, bead_info, F, F_, torque, conf)
+    k_x = @. (k1x + 2*k2x + 2*k3x + k4x)/6
+    k_q = @. (k1q + 2*k2q + 2*k3q + k4q)/6
+    update!(lattice, updateable, k_x, k_q, dt)
+end
+
+@inline function update!(lattice, updateable, Δx, Δq, dt)
+    @fastmath @inbounds @threads for i in 1:length(lattice)
+        lattice.x[i] .+= updateable[i]*Δx[:,i]*dt
+        lattice.q[i] += updateable[i]*Δq[i]*dt
+    end
+end
+
+@inline function update!(lattice_cpy, lattice, updateable, Δx, Δq, dt)
+    @fastmath @inbounds @threads for i in 1:length(lattice)
+        lattice_cpy.x[i] .= lattice.x[i] .+ updateable[i]*Δx[:,i]*dt
+        lattice_cpy.q[i] = lattice.q[i] + updateable[i]*Δq[i]*dt
     end
 end
 
@@ -126,40 +131,39 @@ Arguments:
 
 """
 function forward(
-    beads::Vector{Bead},
+    lattice::Lattice,
     bead_info::Vector{BeadPars},
     F::Matrix{Float64},
     F_,
     torque::Matrix{Float64},
-    #dirs::Dict{Bool,SMatrix{3,4,Float64}}, 
     conf::Union{PatchConfig, RotationConfig},
 )
-    Ntot = lastindex(beads)
-    x = Vector{BeadPos}(undef, Ntot)
+    Ntot = length(lattice)
     q = Vector{Quaternions.Quaternion}(undef, Ntot)
     @unpack damp_x, damp_theta, dt = conf.iter_pars
 
-    internal_forces_and_torques!(F, F_, torque, beads, bead_info, conf.spring_consts)
+    internal_forces_and_torques!(F, F_, torque, lattice, bead_info, conf.spring_consts)
 
-    external_forces!(F, beads, bead_info, conf.external_force)
+    external_forces!(F, lattice, bead_info, conf.external_force)
 
     @inbounds @fastmath @threads for i in 1:Ntot
-        x[i], q[i] = calculcate_deltas(beads[i], F[:,i], torque[:,i], damp_x, damp_theta)
+        q[i] = calculcate_deltas(lattice.q[i], torque[:,i], damp_theta)
     end
-    return x, q
+    return F.*damp_x, q
 end
 
 
-@inline function internal_forces_and_torques!(F, F_, torque, beads, bead_info, consts)
+@inline function internal_forces_and_torques!(F, F_, torque, lattice, bead_info, consts)
     K = consts.K
-    N = lastindex(beads)
+    N = length(lattice)
 
     # this loop could possibly be much faster if distributed over many threads
     @inbounds @fastmath @threads for i in 1:N
         b = bead_info[i]
-        bonds = beads[b.bonds]
-        torque[:,i], F[:,i], F_[:,:,i] = angular_forces(beads[i], bonds, b.directions, K)
-        F[:,i] += linear_forces(beads[i], bonds, bead_info[i])
+        bonds = lattice.x[b.bonds]
+        #F[:, i] .= 0.0
+        torque[:,i], F[:,i], F_[:,:,i] = angular_forces(lattice.x[i], lattice.q[i], bonds, b.directions, K)
+        F[:,i] += linear_forces(lattice.x[i], bonds, bead_info[i])
     end
 
     @threads for i in 1:N
@@ -170,16 +174,6 @@ end
     end
 end
 
-# @inline function internal_forces_and_torques!(F, torque, beads, bead_info, dirs, consts)
-#     K = consts.K
-#     @inbounds @fastmath @threads for i in 1:lastindex(beads)
-#         F[:,i] = linear_forces(beads[i], beads, bead_info[i], consts)
-#     end
-#     for i in 1:lastindex(beads)
-#         torque[:,i] = angular_forces!(F, i, beads[i], beads, bead_info[i], dirs[bead_info[i].α], K)
-#     end
-# end
-
 """
     calculcate_deltas(b, F, τ, γ_x, γ_θ)
 
@@ -188,9 +182,8 @@ Returns Δx, Δq.
 Ensures the orientation is normalized first
 
 """
-@inline function calculcate_deltas(b, F, τ, γ_x, γ_θ)
-    q = sign(b.q)
+@inline function calculcate_deltas(q, τ, γ_θ)
     q_τ = quat(0, τ...)
-    spin = 0.5 * q * q_τ 
-    return F * γ_x, spin * γ_θ
+    spin = 0.5 * sign(q) * q_τ 
+    return spin * γ_θ
 end
