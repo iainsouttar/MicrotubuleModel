@@ -1,16 +1,15 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 50
+num_rings = 20
 a = 4.05
 dx = 5.13
 
 [iter_pars.stoch_euler]
-dt = 0.5
-Tk_B = 0.004143
-#Tk_B = 0.015143
+dt = 0.2
+#Tk_B = 0.004143
+Tk_B = 0.025143
 damp_x = 0.1326
-#damp_x = 0.326
 damp_theta = 0.02487
 
 
@@ -19,7 +18,7 @@ damp_theta = 0.02487
 [spring_consts]
 K = 8.5
 k_long = 3.5
-k_lat = 1.5
+k_lat = 14.0
 k_in = 3.5
 k_in_kin = 8.0
 l0_long = 4.05

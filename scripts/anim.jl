@@ -7,6 +7,8 @@ else
     using MicrotubuleSpringModel
 end
 
+using ProgressMeter
+
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")
 
 conf = set_bond_angles(conf)

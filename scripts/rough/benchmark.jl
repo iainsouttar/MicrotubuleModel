@@ -21,23 +21,23 @@ using Quaternions: Quaternion
 
 #####################################################
 
-conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/bending_stiffness.toml")
+conf = from_toml(MicrotubuleConfig, "config/bending_stiffness.toml")
 
 conf = set_bond_angles(conf)
 
-beads, bead_info = MicrotubuleSpringModel.initialise(conf)
+beads, bead_info = initialise(conf)
 
-@benchmark iterate!($beads, $bead_info, $conf, $conf.iter_pars) samples=500
+@benchmark iterate!($beads, $bead_info, $conf, $conf.iter_pars)
 
 #######################################################
 
-conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")
+conf = from_toml(MicrotubuleConfig, "config/equilibrium.toml")
 
 conf = set_bond_angles(conf)
 
-beads, bead_info, dirs = MicrotubuleSpringModel.initialise(conf)
+lattice, bead_info = initialise(conf)
 
-@benchmark iterate!($beads, $bead_info, $dirs, $conf, $conf.iter_pars)
+@benchmark iterate!($lattice, $bead_info, $conf, $conf.iter_pars)
 
 ###############################################
 

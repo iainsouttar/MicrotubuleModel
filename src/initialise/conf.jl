@@ -36,21 +36,9 @@ end
     dx::Float64
 end
 
-###################################################
-
-@option "spring consts" struct SpringConst
-    K::Float64
-    k_long::Float64
-    k_lat::Float64
-    k_in::Float64
-    k_in_kin::Float64
-    l0_long::Float64
-    l0_lat::Float64
-    l0_in::Float64
-    l0_in_kin::Float64
-end
-
 ###########################################################
+
+# External forces for various mechanical tests
 
 @option "istropic_force" struct IsotropicForce
     F::Float64 = 1.0
@@ -87,7 +75,7 @@ end
 """
 Full lattice and simulation parameters
 """
-@option "rotation" struct RotationConfig
+@option "rotation" struct MicrotubuleConfig
     lattice::LatticePars
     alpha::AlphaConfirm = AlphaConfirm()
     beta::BetaConfirm = BetaConfirm()
@@ -102,11 +90,11 @@ Full lattice and simulation parameters
 end
 
 """
-    initialise(conf)::Tuple{Lattice, Dict{Bool,BondDirec}}
+    initialise(conf)::Tuple{Lattice, Vector{BeadPars}}
 
-    Initialise the lattice and construct the bond directions
+Initialise the lattice and construct the bond directions
 """
-function initialise(conf::RotationConfig)::Tuple{Lattice, Vector{BeadPars}}
+function initialise(conf::MicrotubuleConfig)::Tuple{Lattice, Vector{BeadPars}}
     @unpack num_rings, S, N, a, dx = conf.lattice
 
     dirs = Dict(
@@ -120,7 +108,12 @@ function initialise(conf::RotationConfig)::Tuple{Lattice, Vector{BeadPars}}
 
 end
 
-function initialise_dimer(conf::RotationConfig)
+"""
+    initialise_dimer(conf)::Tuple{Lattice, Vector{BeadPars}}
+
+Initialise the dimer as a lattice and construct the bond directions
+"""
+function initialise_dimer(conf::MicrotubuleConfig)
     @unpack S, N, a, dx = conf.lattice
 
     dirs = Dict(
@@ -130,11 +123,17 @@ function initialise_dimer(conf::RotationConfig)
 
     beads, structure = create_dimer(dirs, conf.spring_consts, a, dx; S=S, N=N)
 
-    return beads, structure, dirs
+    return beads, structure
 
 end
 
-function initialise_PF(conf::RotationConfig)
+
+"""
+    initialise_PF(conf)::Tuple{Lattice, Vector{BeadPars}}
+
+Initialise the protofilament as a lattice and construct the bond directions
+"""
+function initialise_PF(conf::MicrotubuleConfig)
     @unpack S, N, a, dx, num_rings = conf.lattice
 
     dirs = Dict(
@@ -144,9 +143,10 @@ function initialise_PF(conf::RotationConfig)
 
     beads, structure = create_PF(dirs, conf.spring_consts, num_rings, a, dx; S=S, N=N)
 
-    return beads, structure, dirs
+    return beads, structure
 
 end
+
 
 """
 Parameters for a patch of a lattice e.g. 5x5 grid 
@@ -166,13 +166,14 @@ end
 
 function initialise(conf::PatchConfig)
     @unpack N_lat, N_long, S, N, a, dx = conf.lattice
-    beads, structure = create_patch(N_lat, N_long, a, dx; S=S, N=N)
 
     dirs = Dict(
         true => bond_directions(conf.alpha),
         false => bond_directions(conf.beta)
     )
 
-    return beads, structure, dirs
+    beads, structure = create_patch(dirs, conf.spring_consts, N_lat, N_long, a, dx; S=S, N=N)
+
+    return beads, structure
 
 end

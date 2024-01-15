@@ -1,5 +1,5 @@
 """
-    burnin(conf::Union{RotationConfig, PatchConfig}, Nt::Int; show_E=false)
+    burnin(conf::Union{MicrotubuleConfig, PatchConfig}, Nt::Int; show_E=false)
 
 Initialise and run simulation for configuration `conf` with `Nt` timesteps. 
 Finds equilibrium position to then be used for experiments.
@@ -8,7 +8,7 @@ If show_E is true, additionally returns the energy over time.
 
 
 """
-function burnin(conf::Union{RotationConfig, PatchConfig}, Nt::Int; show_E=false)
+function burnin(conf::Union{MicrotubuleConfig, PatchConfig}, Nt::Int; show_E=false)
     conf_burnin = deepcopy(conf)
     conf_burnin = @set conf_burnin.external_force = NoExternalForce()
     beads, bead_info = initialise(conf_burnin)

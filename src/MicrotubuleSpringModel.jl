@@ -10,7 +10,6 @@ using Random
 using Quaternions
 using Configurations: @option, to_toml
 using Setfield: @set
-using LoopVectorization: @tturbo, @avx, @turbo
 using DelimitedFiles
 using CSV
 using DataFrames
@@ -21,27 +20,22 @@ using ColorSchemes
 
 export 
     BeadPos,
-    BeadAngle,
-    Bead,
+
+    Lattice,
+    BeadPars,
+    SpringConst,
+
     create_lattice,
-    bond_directions,
-    neighbours,
+    initialise,
+    initialise_dimer,
+    initialise_PF,
     set_bond_angles,
 
     total_energy,
-    LinSpringConst,
-
-    quat_from_axisangle,
-    orientate_vector,
-
-    BondAngle,
-    BondDirec,
-    torque_and_force,
 
     iterate!,
-    iterateSDE!,
 
-    RotationConfig,
+    MicrotubuleConfig,
     PatchConfig,
 
     surface_area,
@@ -63,15 +57,6 @@ export
 
 
 BeadPos = MVector{3, Float64}
-BeadAngle = MVector{3, Float64}
-
-# three vector for position and for orientation angles
-# alpha true for alpha monomer, false for beta monomer 
-mutable struct Bead
-    x::BeadPos
-    q::Quaternions.Quaternion
-    kinesin::Bool
-end
 
 mutable struct Lattice{N}
     x::MVector{N, BeadPos}
@@ -89,18 +74,12 @@ Base.size(l::Lattice) = size(l.kinesin)
 Base.length(l::Lattice) = length(l.kinesin)
 
 
-# three vector for position and for orientation angles
-# alpha true for alpha monomer, false for beta monomer 
 struct BeadPars
     α::Bool
     bonds::Vector{Int}
     directions::Vector{SVector{3,Float64}}
     consts::Vector{Float64}
     lengths::Vector{Float64}
-    # north::Int
-    # east::Int
-    # south::Int
-    # west::Int
 end
 
 include("utils/quaternions.jl")

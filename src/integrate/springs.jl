@@ -12,7 +12,10 @@ function linear_forces(
     F = MVector{3,Float64}(0,0,0)
     # loop over the bond  parameters and neighbour bead positions
     for (k, l0, b) in zip(b_info.consts, b_info.lengths, bonds)
-        F += spring_force(b - x, l0, k)
+        r = b - x
+        d = norm(b - x)
+        rhat = r ./ d
+        F += spring_force(rhat, d, l0, k)
     end
     return F
 end
@@ -30,10 +33,10 @@ Return force due to displacement r of a spring
 # Returns
 - `MVector{3, Float64}`: directed force
 """
-@inline @fastmath function spring_force(r::BeadPos, l0::Real, k::Real)
-    d = norm(r)
+@inline @fastmath function spring_force(rhat, d, l0::Real, k::Real)
+    #d = norm(r)
     ΔL = d - l0
-    return (k*ΔL/d) * r
+    return (k*ΔL) * rhat
 end
 
 

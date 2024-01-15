@@ -8,6 +8,9 @@ else
 end
 
 
+filename = "fluctuations-free.csv"
+path = "results/raw"
+
 function update_positions!(x, row, N)
     for j in 1:N
         x[j] = BeadPos(parse(Float64,row[3*j-2]),parse(Float64,row[3*j-1]), parse(Float64,row[3*j]))
@@ -15,11 +18,14 @@ function update_positions!(x, row, N)
     return
 end
 
-N = conf.lattice.num_rings*conf.lattice.N
+N = 100*13
 open(path*"/"*filename, "r") do io
     steps = countlines(io)
 end
 x = Vector{BeadPos}(undef, N)
+
+print(N)
+println(N)
 
 open(path*"/"*filename) do io
     iterator = CSV.Rows(io, header=false)
@@ -31,10 +37,11 @@ open(path*"/"*filename) do io
     scene = Scene(resolution=(1200,900), backgroundcolor=colorant"#111111")
     cam3d!(scene)
     bead_plots = plot_individual!(scene, x, a=8.0)
-    scene
+    GLMakie.scale!(scene, 0.03, 0.03, 0.03)
+    center!(scene)
 
     p = Progress(steps)
-    Makie.record(scene, "figures/anim-long.mp4", iterator) do row
+    Makie.record(scene, "figures/anim-free-100.mp4", iterator) do row
         update_positions!(x, row, N)
         for (n, x_i) in enumerate(x)
             translate!(bead_plots[n], x_i...)

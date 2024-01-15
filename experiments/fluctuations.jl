@@ -15,15 +15,15 @@ end
 
 Nt = 50_000
 stp = 200
-filename = "fluctuations2.csv"
+filename = "fluctuations-free-20.csv"
 path = "results/raw"
 
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")
 conf = set_bond_angles(conf)
 beads, bead_info = MicrotubuleSpringModel.initialise(conf)
 
-data = Matrix{Float64}(zeros(Float64, (length(beads.x)*3,1)))
-for i in 1:lastindex(beads.x)
+data = Matrix{Float64}(zeros(Float64, (length(beads)*3,1)))
+for i in 1:length(beads)
     data[3*(i-1)+1:3*i,1] .= beads.x[i]
 end
 open(path*"/"*filename, "w") do io

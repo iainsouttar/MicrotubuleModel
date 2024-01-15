@@ -1,26 +1,25 @@
 """
     iterate!(
-        beads::Vector{Bead},
+        beads::Lattice,
         bead_info::Vector{BeadPars},
-        dirs::Dict{Bool,SMatrix{3,4,Float64}},
-        conf::Union{PatchConfig, RotationConfig},
+        conf::Union{PatchConfig, MicrotubuleConfig},
         iter::StochEulerPars
     )
 
 Iterate the bead positions and orientations.
 
 Arguments:
-- `beads::Vector{Bead}`: mutable position and orientation info
+- `beads::Lattice`: mutable position and orientation of the beads
 - `bead_info::Vector{BeadPars}`: lattice connections and tubulin type (alpha/beta)
 - `dirs::Dict{Bool,SMatrix{3,4,Float64}}`: natural bond angles 
-- `conf::Union{PatchConfig, RotationConfig}`: simulation parameters
+- `conf::Union{PatchConfig, MicrotubuleConfig}`: simulation parameters
 - `iter`: determines the integration scheme used.
 
 """
 function iterate!(
     lattice::Lattice,
     bead_info::Vector{BeadPars},
-    conf::Union{PatchConfig,RotationConfig},
+    conf::Union{PatchConfig,MicrotubuleConfig},
     iter::StochEulerPars
 )
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
@@ -31,7 +30,8 @@ function iterate!(
     F_ = zeros(Float64, (3, 4, Ntot))
     torque = similar(F)
 
-    updateable = (collect(1:Ntot) .> N)
+    #updateable = (collect(1:Ntot) .> N)
+    updateable = ones(Bool, Ntot)
     
     Δx, Δq = forward(lattice, bead_info, F, F_, torque, conf)
     ΔW = σ_x*randn((3,Ntot))
@@ -44,7 +44,7 @@ end
 function iterate!(
     lattice::Lattice,
     bead_info::Vector{BeadPars},
-    conf::Union{PatchConfig,RotationConfig},
+    conf::Union{PatchConfig,MicrotubuleConfig},
     iter::EulerPars
 )
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
@@ -64,7 +64,7 @@ end
 function iterate!(
     lattice::Lattice,
     bead_info::Vector{BeadPars},
-    conf::Union{PatchConfig,RotationConfig},
+    conf::Union{PatchConfig,MicrotubuleConfig},
     iter::RK4Pars
 )
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
@@ -74,8 +74,6 @@ function iterate!(
     F_ = zeros(Float64, (3, 4, Ntot))
     torque = similar(F)
     lattice_cpy = deepcopy(lattice)
-
-    N *= 1
 
     updateable = ((1:Ntot) .> N)
     
@@ -93,6 +91,7 @@ function iterate!(
     k_q = @. (k1q + 2*k2q + 2*k3q + k4q)/6
     update!(lattice, updateable, k_x, k_q, dt)
 end
+
 
 @inline function update!(lattice, updateable, Δx, Δq, dt)
     @fastmath @inbounds @threads for i in 1:length(lattice)
@@ -116,7 +115,7 @@ end
         F::Matrix{Float64},
         torque::Matrix{Float64},
         dirs::Dict{Bool,Union{AlphaConfirm, BetaConfirm}}, 
-        conf::Union{PatchConfig, RotationConfig},
+        conf::Union{PatchConfig, MicrotubuleConfig},
     )
 
 Iterate the bead positions and orientations.
@@ -127,7 +126,7 @@ Arguments:
 - `F::Matrix{Float64}`: 3D force for each bead to be calculated
 - `torque::Matrix{Float64}`: 3D torques for each bead to be calculated
 - `dirs::Dict{Bool,SMatrix{3,4,Float64}}`: natural bond angles 
-- `conf::Union{PatchConfig, RotationConfig}`: simulation parameters
+- `conf::Union{PatchConfig, MicrotubuleConfig}`: simulation parameters
 
 """
 function forward(
@@ -136,7 +135,7 @@ function forward(
     F::Matrix{Float64},
     F_,
     torque::Matrix{Float64},
-    conf::Union{PatchConfig, RotationConfig},
+    conf::Union{PatchConfig, MicrotubuleConfig},
 )
     Ntot = length(lattice)
     q = Vector{Quaternions.Quaternion}(undef, Ntot)
@@ -147,43 +146,14 @@ function forward(
     external_forces!(F, lattice, bead_info, conf.external_force)
 
     @inbounds @fastmath @threads for i in 1:Ntot
-        q[i] = calculcate_deltas(lattice.q[i], torque[:,i], damp_theta)
+        q[i] = quat_delta(lattice.q[i], torque[:,i], damp_theta)
     end
     return F.*damp_x, q
 end
 
-
-@inline function internal_forces_and_torques!(F, F_, torque, lattice, bead_info, consts)
-    K = consts.K
-    N = length(lattice)
-
-    # this loop could possibly be much faster if distributed over many threads
-    @inbounds @fastmath @threads for i in 1:N
-        b = bead_info[i]
-        bonds = lattice.x[b.bonds]
-        #F[:, i] .= 0.0
-        torque[:,i], F[:,i], F_[:,:,i] = angular_forces(lattice.x[i], lattice.q[i], bonds, b.directions, K)
-        F[:,i] += linear_forces(lattice.x[i], bonds, bead_info[i])
-    end
-
-    @threads for i in 1:N
-        b = bead_info[i]
-        for j in 1:lastindex(b.bonds)
-            @. F[:, b.bonds[j]] += F_[:, j, i]
-        end
-    end
-end
-
 """
-    calculcate_deltas(b, F, τ, γ_x, γ_θ)
+    quat_delta(q, τ, γ_θ)
 
 Calculate the change in the position and orientation for the next timestep.
-Returns Δx, Δq.
-Ensures the orientation is normalized first
-
 """
-@inline function calculcate_deltas(q, τ, γ_θ)
-    q_τ = quat(0, τ...)
-    spin = 0.5 * sign(q) * q_τ 
-    return spin * γ_θ
-end
+quat_delta(q, τ, γ_θ) = γ_θ * 0.5 * sign(q) * quat(0, τ...)

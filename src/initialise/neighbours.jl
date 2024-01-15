@@ -66,7 +66,7 @@ end
 """
     neighbours(idx::Int, total::Int)
 
-Return neighbours in the lateral and longitudinal direction for bead `idx` of `total`
+Return neighbours in the lateral and longitudinal direction for bead `idx` of `total`.
 """
 function neighbours(idx::Int, total::Int)::Tuple{Tuple{Int,Int}, Tuple{Int, Int}}
     return lateral_nn(idx, total), long_nn(idx, total)
