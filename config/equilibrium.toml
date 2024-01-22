@@ -1,7 +1,7 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 50
+num_rings = 100
 a = 4.05
 dx = 5.13
 
@@ -12,7 +12,6 @@ damp_theta = 0.02487
 
 
 [spring_consts]
-K = 8.5
 k_long = 3.5
 k_lat = 14.0
 k_in = 3.5

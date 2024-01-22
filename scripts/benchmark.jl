@@ -39,12 +39,15 @@ lattice, bead_info = initialise(conf)
 
 @benchmark iterate!($lattice, $bead_info, $conf, $conf.iter_pars)
 
-###############################################
 
-b1 = beads[15]
-@unpack north, α = bead_info[15]
 
-v = MicrotubuleSpringModel.orientate_vector(dirs[α][:,1], b1.q)
-@fastmath r = beads[north].x - b1.x
+conf = from_toml(MicrotubuleConfig, "config/equilibrium.toml")
+conf = set_bond_angles(conf)
 
-@benchmark torque_and_force($v, $r, 1.0)
+beads, bead_info = MicrotubuleSpringModel.initialise(conf)
+
+Nt = Int(1e6)
+
+@showprogress for i in 1:Nt
+    iterate!(beads, bead_info, conf, conf.iter_pars)
+end

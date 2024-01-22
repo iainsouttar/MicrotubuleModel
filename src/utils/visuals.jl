@@ -1,13 +1,13 @@
 
-ColorSchemes.colorschemes[:nature] = ColorScheme([colorant"#E64B35",colorant"#4DBBD5",colorant"#00A087",colorant"#3C5488", colorant"#F39B7F", colorant"#8491B4", colorant"#91D1C2"])
+ColorSchemes.colorschemes[:COLORSCHEME] = ColorScheme([colorant"#E64B35",colorant"#4DBBD5",colorant"#00A087",colorant"#3C5488", colorant"#F39B7F", colorant"#8491B4", colorant"#91D1C2"])
 
-NATURE = ColorScheme([colorant"#E64B35",colorant"#4DBBD5",colorant"#00A087",colorant"#3C5488", colorant"#F39B7F", colorant"#8491B4", colorant"#91D1C2"])
+COLORSCHEME = ColorScheme([colorant"#E64B35",colorant"#4DBBD5",colorant"#00A087",colorant"#3C5488", colorant"#F39B7F", colorant"#8491B4", colorant"#91D1C2"])
 
 COLORS = Dict(
-    (true, false) => NATURE.colors[1], 
-    (false, false) => NATURE.colors[2],
-    (true, true) => NATURE.colors[3],
-    (false, true) => NATURE.colors[4]
+    (true, false) => COLORSCHEME.colors[1], 
+    (false, false) => COLORSCHEME.colors[2],
+    (true, true) => COLORSCHEME.colors[3],
+    (false, true) => COLORSCHEME.colors[4]
 )
 
 function GLMakie.plot(lattice::Lattice, info::Vector{BeadPars}; a=4.05, l=4.0)
@@ -20,7 +20,7 @@ end
 
 
 function GLMakie.plot!(scene, lattice::Lattice, info::Vector{BeadPars}; a=4.05, l=4.0)
-    c = [NATURE.colors[3],NATURE.colors[4],NATURE.colors[5],NATURE.colors[6]]
+    c = [COLORSCHEME.colors[3],COLORSCHEME.colors[4],COLORSCHEME.colors[5],COLORSCHEME.colors[6]]
 
     for (x, q, b_) in zip(lattice.x, lattice.q, info)
         for (i,bond) in enumerate(b_.directions)
@@ -55,7 +55,7 @@ end
 
 function plot_individual!(scene, x; a=8.05)
     beads = []
-    colors = Dict(true=>NATURE.colors[1], false=>NATURE.colors[2])
+    colors = Dict(true=>COLORSCHEME.colors[1], false=>COLORSCHEME.colors[2])
     for (i,x_i) in enumerate(x)
         bead = mesh!(scene, Sphere(Point3f(x_i), a/2), color=colors[iseven(i÷13)], shininess=32.0)
         push!(beads, bead)
@@ -80,10 +80,10 @@ function plot_E!(ax, time, E)
     E_band = cumsum(E,dims=1)
     E_tot = E_band[end,:]
     lines!(ax,time, E_tot, color=:black, linewidth=4)
-    band!(ax, time, 0, E_band[1,:], color=NATURE.colors[1], label=labels[1])
+    band!(ax, time, 0, E_band[1,:], color=COLORSCHEME.colors[1], label=labels[1])
     for i in 1:5
         lines!(ax,time, E_band[i,:], color=:black, linewidth=2)
-        band!(ax, time, E_band[i,:], E_band[i+1,:], color=MicrotubuleSpringModel.NATURE.colors[i+1], label=labels[i+1])
+        band!(ax, time, E_band[i,:], E_band[i+1,:], color=MicrotubuleSpringModel.COLORSCHEME.colors[i+1], label=labels[i+1])
     end
     xlims!(0,time[end])
     ylims!(low=0.0)

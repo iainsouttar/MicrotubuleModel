@@ -32,6 +32,7 @@ function iterate!(
 
     #updateable = (collect(1:Ntot) .> N)
     updateable = ones(Bool, Ntot)
+    updateable[1] = false
     
     Δx, Δq = forward(lattice, bead_info, F, F_, torque, conf)
     ΔW = σ_x*randn((3,Ntot))
@@ -56,8 +57,8 @@ function iterate!(
     
     Δx, Δq = forward(lattice, bead_info, F, F_, torque, conf)
     updateable = (collect(1:Ntot) .> N)
-    #updateable = ones(Bool, Ntot)
-    #updateable[1] = false
+    # updateable = ones(Bool, Ntot)
+    # updateable[1] = false
     update!(lattice, updateable, Δx, Δq, dt)
 end
 
@@ -141,8 +142,7 @@ function forward(
     q = Vector{Quaternions.Quaternion}(undef, Ntot)
     @unpack damp_x, damp_theta, dt = conf.iter_pars
 
-    internal_forces_and_torques!(F, F_, torque, lattice, bead_info, conf.spring_consts)
-
+    internal_forces_and_torques!(F, F_, torque, lattice, bead_info)
     external_forces!(F, lattice, bead_info, conf.external_force)
 
     @inbounds @fastmath @threads for i in 1:Ntot

@@ -1,8 +1,8 @@
 # Fdb version 4
-["pdflatex"] 1705068181 "c:/Users/jeremy/OneDrive/Microtubules/MicrotubuleSpringModel/tikz/YM.tex" "pdf/YM.pdf" "YM" 1705068213 0
+["pdflatex"] 1705412528 "c:/Users/jeremy/OneDrive/Microtubules/MicrotubuleSpringModel/tikz/YM.tex" "pdf/YM.pdf" "YM" 1705412569 0
   "../results/processed/young-modulus-data-2.csv" 1705067993 247 7954ace138b11867281baeca1bc99397 ""
   "../results/processed/young-modulus-fit-2.csv" 1705067993 393316 21056c3827883d2fafac60cf82c4a576 ""
-  ".aux/YM.aux" 1705068212 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  ".aux/YM.aux" 1705412568 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
   "C:/Users/jeremy/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1702480180 810584 94d20fbf7d47c3e056980af54129d962 ""
   "C:/Users/jeremy/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1700654576 24213712 bc0aa14c136dabf55dfc7d56958acc2b ""
   "C:/Users/jeremy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1247593067 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
@@ -151,9 +151,9 @@
   "C:/Users/jeremy/AppData/Local/Programs/MiKTeX/tex/latex/translations/translations.sty" 1644048522 44247 2188b95d0ee74e31eca4d316263c58a7 ""
   "C:/Users/jeremy/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
   "C:/Users/jeremy/AppData/Local/Programs/MiKTeX/tex/latex/xkeyval/xkeyval.sty" 1656233319 4937 4ce600ce9bd4ec84d0250eb6892fcf4f ""
-  "YM.tex" 1705068179 813 2275707c0c1ebb011a924632e2b5270d ""
-  "c:/Users/jeremy/OneDrive/Microtubules/MicrotubuleSpringModel/tikz/YM.tex" 1705068179 813 2275707c0c1ebb011a924632e2b5270d ""
-  "style.tex" 1705068172 989 2464c7f059f6a1866c1c9f1e8350ada5 ""
+  "YM.tex" 1705412526 897 491988b1eb4b0d2ce753dc3fae995213 ""
+  "c:/Users/jeremy/OneDrive/Microtubules/MicrotubuleSpringModel/tikz/YM.tex" 1705412526 897 491988b1eb4b0d2ce753dc3fae995213 ""
+  "style.tex" 1705079248 989 2464c7f059f6a1866c1c9f1e8350ada5 ""
   (generated)
   ".aux/YM.aux"
   ".aux/YM.log"

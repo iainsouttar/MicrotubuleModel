@@ -1,7 +1,14 @@
+"""
+Simulate a free MT fluctuating due to Brownian Motion.
+Output results periodically to a file to be visualised.
+
+"""
+
 using Logging
 using Parameters: @unpack
 using ProgressMeter
 using Configurations
+using DelimitedFiles
 
 
 #  VS Code workaround: https://github.com/julia-vscode/julia-vscode/issues/800
@@ -13,12 +20,12 @@ else
     using MicrotubuleSpringModel
 end
 
-Nt = 50_000
+Nt = 100_000
 stp = 200
-filename = "fluctuations-free-20.csv"
+filename = "fluctuations-free-30.csv"
 path = "results/raw"
 
-conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")
+conf = from_toml(MicrotubuleConfig, "config/stochastic.toml")
 conf = set_bond_angles(conf)
 beads, bead_info = MicrotubuleSpringModel.initialise(conf)
 

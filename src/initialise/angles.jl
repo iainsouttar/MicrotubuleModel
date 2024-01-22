@@ -45,7 +45,7 @@ function calc_natural_angles(S, N, dx, a)
     R = N*dx/2π  # radius of cylinder
     l = 2*R*sin(π/N)  # distance between adjacent beads
     ϕ = atan(r,l)
-    δ = 0.0
+    δ = 0.2
 
     α = MicrotubuleSpringModel.AlphaConfirm(
         [π/2, -δ],

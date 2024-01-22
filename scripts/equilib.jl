@@ -54,3 +54,8 @@ f = Figure(resolution=(1000,600))
 ax = Axis(f[1,1])
 MicrotubuleSpringModel.plot_E!(ax, time, E)
 f
+
+i = 50
+bond_indices(i, 130, bead_info[i].α)
+
+total_energy(beads, bead_info)

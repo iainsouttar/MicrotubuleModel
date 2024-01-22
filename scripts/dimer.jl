@@ -7,7 +7,7 @@ else
     using MicrotubuleSpringModel
 end
 
-conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/YM_PF.toml")
+conf = from_toml(MicrotubuleConfig, "config/stochastic.toml")
 
 conf = set_bond_angles(conf)
 
@@ -16,22 +16,15 @@ beads, bead_info = MicrotubuleSpringModel.initialise_PF(conf)
 conf_burnin = deepcopy(conf)
 conf_burnin = @set conf_burnin.external_force = MicrotubuleSpringModel.NoExternalForce()
 
+for i in 1:50000
+    iterate!(beads, bead_info, conf_burnin, conf_burnin.iter_pars)
+end
+
 GLMakie.activate!()
 GLMakie.closeall()
 scene = plot(beads, bead_info)
 scene
 
-L0 = mt_length(beads)
-
-for i in 1:1000
-    iterate!(beads, bead_info, conf_burnin, conf_burnin.iter_pars)
-end
-
-L0 = mt_length(beads)
-
-
-plot!(scene, beads, bead_info)
-scene
 
 
 for i in 1:10000

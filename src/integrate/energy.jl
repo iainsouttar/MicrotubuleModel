@@ -18,32 +18,34 @@
 function bead_energy(
     x,
     q::Quaternions.Quaternion,
+    indices,
     bonds,
-    b::BeadPars,
-    K::Real
+    b::BeadPars
 )
-    #E = MVector{6,Float64}(zeros(6))
-    E = 0.0
+    E = MVector{6,Float64}(zeros(6))
+    #E = 0.0
 
-    for (k, l0, dir, bx) in zip(b.consts, b.lengths, b.directions, bonds)
+    for (k, K, l0, dir, bx, idx) in zip(b.lin_consts, b.bend_consts, b.lengths, b.directions, bonds, indices)
         # transform bond direction according to bead orientation
         v = orientate_vector(dir, sign(q))
         @fastmath r = bx - x
         d = norm(r)
-        E += spring_energy(d, l0, k)
-        E += bend_energy(r./d, v, K)
+        E[idx] += spring_energy(d, l0, k)
+        E[idx+3] += bend_energy(r./d, v, K)
     end
 
-    return E / 2
+    return E ./ 2
 end
 
-function total_energy(lattice, bead_info, K::Real)
-    #E = zeros(Float64, (6, length(lattice)))
-    E = zeros(Float64, length(lattice))
+function total_energy(lattice, bead_info)
+    Ntot = length(lattice)
+    E = zeros(Float64, (6, Ntot))
+    #E = zeros(Float64, length(lattice))
     @inbounds @fastmath @threads for i in 1:length(lattice)
         b = bead_info[i]
         bonds = lattice.x[b.bonds]
-        E[i] = bead_energy(lattice.x[i], lattice.q[i], bonds, b, K)
+        indices = bond_indices(i, Ntot, b.α)
+        E[:,i] = bead_energy(lattice.x[i], lattice.q[i], indices, bonds, b)
     end
-    return sum(E)
+    return vec(sum(E, dims=2))
 end

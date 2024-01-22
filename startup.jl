@@ -14,8 +14,7 @@ using GLMakie
 using Configurations
 using Setfield
 
-using Quaternions
-using Quaternions: Quaternion
+using DelimitedFiles, CSV
 
 #  VS Code workaround: https://github.com/julia-vscode/julia-vscode/issues/800
 if isdefined(@__MODULE__, :LanguageServer)

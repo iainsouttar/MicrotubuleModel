@@ -31,6 +31,9 @@ export
     initialise_PF,
     set_bond_angles,
 
+    bond_indices,
+    intra_dimer_index,
+
     total_energy,
 
     iterate!,
@@ -52,35 +55,12 @@ export
     plot_flat!,
     plot_individual!,
     colorschemes,
+    COLORSCHEME,
 
     burnin
 
 
 BeadPos = MVector{3, Float64}
-
-mutable struct Lattice{N}
-    x::MVector{N, BeadPos}
-    q::Vector{Quaternions.Quaternion}
-    kinesin::MVector{N, Bool}
-end
-
-function Lattice(x, q, kinesin)
-    N = length(kinesin)
-    return Lattice{N}(x, q, kinesin)
-end
-
-Base.size(l::Lattice) = size(l.kinesin)
-
-Base.length(l::Lattice) = length(l.kinesin)
-
-
-struct BeadPars
-    α::Bool
-    bonds::Vector{Int}
-    directions::Vector{SVector{3,Float64}}
-    consts::Vector{Float64}
-    lengths::Vector{Float64}
-end
 
 include("utils/quaternions.jl")
 
@@ -89,8 +69,7 @@ include("initialise/neighbours.jl")
 include("initialise/angles.jl")
 include("initialise/conf.jl")
 
-include("integrate/springs.jl")
-include("integrate/bending.jl")
+include("integrate/internal_forces.jl")
 include("integrate/external_forces.jl")
 include("integrate/energy.jl")
 include("integrate/step.jl")

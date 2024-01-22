@@ -1,3 +1,12 @@
+"""
+Test the bending stiffness of microtubules of various lengths.
+
+Finds the equilibrium length and position of the MT.
+Applies a force to the free end perpendicular to MT.
+Measures displacement of the end ring once new equilib has been found.
+
+"""
+
 using Logging
 using Parameters: @unpack
 using ProgressMeter
@@ -15,8 +24,10 @@ else
 end
 
 
-function main!(F, conf, num_rings, step, Nt)
+function main!(F, conf, num_rings, Nt)
     conf = @set conf.lattice.num_rings = num_rings
+    
+    # first find equilib position of lattice
     conf_burnin = deepcopy(conf)
     conf_burnin = @set conf_burnin.external_force = MicrotubuleSpringModel.NoExternalForce()
     beads, bead_info = burnin(conf_burnin, 500)
@@ -24,23 +35,21 @@ function main!(F, conf, num_rings, step, Nt)
     L0 = microtubule_length(beads, conf.lattice)
     N = conf.lattice.N
     Ntot = length(beads)
-    time = collect(0:step:Nt)
-    deflection = zeros(length(time))
-
     original = deepcopy(beads.x[Ntot-N:end])
 
     @showprogress for i in 1:Nt
         iterate!(beads, bead_info, conf, conf.iter_pars)
-        if i % step == 0
-            deflection[i÷step+1] = deflection_end(beads.x, original)
-        end
     end
-    return stiffness(13*F, L0, deflection[end]), L0
+
+    return stiffness(13*F, L0, deflection_end(beads.x, original)), L0
 end
 
-Nt = 50_000
-step = 2_000
+Nt = 1_000
 time = 0:step:Nt
+filename = "bending_stiffness_test.csv"
+
+df = DataFrame(length=[0], stiffness=[0])
+save_to_csv(filename, df)
 
 num_rings = collect(10:10:50)
 L0 = zeros(length(num_rings))
@@ -50,12 +59,11 @@ conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/bending_stiffnes
 conf = set_bond_angles(conf)
 
 for (i, n) in enumerate(num_rings)
-    stiff[i], L0[i] = main!(0.01, conf, n, step, Nt)
+    stiff[i], L0[i] = main!(0.01, conf, n, Nt)
     @info stiff[i], L0[i]
+    save_to_csv(filename, df, append=true, header=false)
 end
 
-df = DataFrame(length=L0, stiffness=stiff)
-save_to_csv("bending_stiffness.csv", df)
 
 # CairoMakie.activate!()
 # f = Figure(resolution=(1000,1500))
@@ -70,3 +78,20 @@ save_to_csv("bending_stiffness.csv", df)
 # ax = Axis(f[1,1])
 # scatter!(ax, L0, stiff)
 # f
+
+using DataFrames
+
+data, header = readdlm("results/processed/bending_stiffness.csv", ',', header=true)
+
+df = DataFrame(data, vec(header))
+
+
+CairoMakie.activate!()
+f = Figure(resolution=(1000,600))
+ax = Axis(f[1,1],
+        #ylabel="Strain",
+        #xlabel="Stress (GPa)"
+)
+scatter!(ax, df.length, df.stiffness)
+#limits!(ax,0.0, stress[end]*1.02 ,0.0, strain[end]*1.02)
+f

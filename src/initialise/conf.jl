@@ -1,9 +1,15 @@
+"""
+Timestepping parameters for a simple forward Euler scheme with overdamped dynamics.
+"""
 @option "euler" struct EulerPars
     dt::Float64
     damp_x::Float64
     damp_theta::Float64
 end
 
+"""
+Timestepping parameters for a simple Euler-Maruyama scheme with overdamped dynamics.
+"""
 @option "stoch_euler" struct StochEulerPars
     dt::Float64
     Tk_B::Float64
@@ -11,6 +17,10 @@ end
     damp_theta::Float64
 end
 
+
+"""
+Timestepping parameters for a 4th order Runga-Kutta scheme with overdamped dynamics.
+"""
 @option "rk4" struct RK4Pars
     dt::Float64
     damp_x::Float64
@@ -19,6 +29,9 @@ end
 
 ####################################################
 
+"""
+Parameters necessary to construct a MT.
+"""
 @option "lattice" struct LatticePars
     S::Int
     N::Int
@@ -27,6 +40,9 @@ end
     dx::Float64
 end
 
+"""
+Parameters necessary to construct a section of a MT.
+"""
 @option "patch" struct LatticePatchPars
     S::Int
     N::Int
@@ -64,6 +80,11 @@ end
 
 ########################################################
 
+"""
+    set_bond_angles(conf)
+
+Alter configuration `conf` to have pre-determined bond angles which match the angles in a 13_3 MT.
+"""
 function set_bond_angles(conf)
     @unpack S, N, dx, a = conf.lattice
     α, β = calc_natural_angles(S, N, dx, a)
@@ -75,7 +96,7 @@ end
 """
 Full lattice and simulation parameters
 """
-@option "rotation" struct MicrotubuleConfig
+@option "microtubule" struct MicrotubuleConfig
     lattice::LatticePars
     alpha::AlphaConfirm = AlphaConfirm()
     beta::BetaConfirm = BetaConfirm()
@@ -134,14 +155,14 @@ end
 Initialise the protofilament as a lattice and construct the bond directions
 """
 function initialise_PF(conf::MicrotubuleConfig)
-    @unpack S, N, a, dx, num_rings = conf.lattice
+    @unpack a, num_rings = conf.lattice
 
     dirs = Dict(
         true => bond_directions(conf.alpha),
         false => bond_directions(conf.beta)
     )
 
-    beads, structure = create_PF(dirs, conf.spring_consts, num_rings, a, dx; S=S, N=N)
+    beads, structure = create_PF(dirs, conf.spring_consts, num_rings, a)
 
     return beads, structure
 

@@ -28,7 +28,8 @@ R = 2.0
 
 @unpack S, N, dx, a = conf.lattice
 r = S*a/N
-
-r_lat = sqrt(r^2 + dx^2)
+R = N*dx/2π
+δx = 2*R*sin(dx/(2*R))
+l0_lat = sqrt(r^2 + δx^2)
 
 Tk_B = 1.381e-5*300
