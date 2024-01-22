@@ -4,17 +4,17 @@
 
 Return neighbours in the lateral direction for bead `idx` of `total`
 """
-function lateral_nn(idx::Int, total::Int)::Tuple{Int,Int}
-    if idx % 13 == 0 
-        if idx > total-2*13-1
+function lateral_nn(idx::Int, total::Int; N::Int=13, S::Int=3)::Tuple{Int,Int}
+    if idx % N == 0 
+        if idx > total-(S-1)*N-1
             return (0, idx-1)
         end
-        return (idx+1+2*13, idx-1)
-    elseif idx % 13 == 1
-        if idx < 2*13+1
+        return (idx+1+(S-1)*N, idx-1)
+    elseif idx % N == 1
+        if idx < (S-1)*N+1
             return (idx+1, 0)
         end
-        return (idx+1, idx-1-2*13)
+        return (idx+1, idx-1-(S-1)*N)
     end
     return (idx+1, idx-1)
 end
@@ -24,13 +24,13 @@ end
 
 Return neighbours in the longitudinal direction for bead `idx` of `total`
 """
-function long_nn(idx::Int, total::Int)::Tuple{Int,Int}
-    if idx<14
-        return idx+13, 0
-    elseif idx>total-13
-        return 0, idx-13
+function long_nn(idx::Int, total::Int; N::Int=13)::Tuple{Int,Int}
+    if idx<N+1
+        return idx+N, 0
+    elseif idx>total-N
+        return 0, idx-N
     end
-    return idx+13, idx-13
+    return idx+N, idx-N
 end
 
 """
@@ -68,8 +68,8 @@ end
 
 Return neighbours in the lateral and longitudinal direction for bead `idx` of `total`.
 """
-function neighbours(idx::Int, total::Int)::Tuple{Tuple{Int,Int}, Tuple{Int, Int}}
-    return lateral_nn(idx, total), long_nn(idx, total)
+function neighbours(idx::Int, total::Int, N::Int=13, S::Int=3)::Tuple{Tuple{Int,Int}, Tuple{Int, Int}}
+    return lateral_nn(idx, total, N=N, S=S), long_nn(idx, total, N=N)
 end
 
 

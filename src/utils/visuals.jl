@@ -68,7 +68,7 @@ end
 
 
 function plot_flat!(ax::Axis, lattice::Lattice, bead_info::Vector{BeadPars}; markersize=40)
-    pts = [Point2f(x[1],x[3]) for x in lattice.x]
+    pts = Vector{Point2f}([Point2f(x[1],x[3]) for x in lattice.x])
     color = [COLORS[(b_.α, kin)] for (kin,b_) in zip(lattice.kinesin, bead_info)]
     return scatter!(ax, pts, color=color, marker=:circle, markersize=markersize)
 end
