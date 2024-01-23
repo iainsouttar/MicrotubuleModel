@@ -164,16 +164,14 @@ create_lattice(dirs, consts, num_rings, a, δx; S::Int=3, N::Int=13) = create_pa
 
 
 """
-    create_dimer(num_rings::Int, a::Real, δx::Real; S=3, N=13)
+    create_dimer(dirs, consts, a::Real)
 
 Construct a full lattice of beads connected by springs.
 
 # Arguments
 - `dirs::Dict`: bond directions for either alpha/beta tubulin
 - `consts::SpringConst`: spring constants
-- `num_rings::Int`: number of beads laterally
 - `a::Real`: intial separation along protofilament
-- `δx::Real`: initial separation laterally
 
 # Returns
 - `Lattice`: lattice of the two connected beads

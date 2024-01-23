@@ -15,20 +15,20 @@ end
 #####################################################
 
 conf = from_toml(MicrotubuleConfig, "config/equilibrium.toml")
-conf = set_bond_angles(conf)
+#conf = set_bond_angles(conf)
 
-beads, bead_info = MicrotubuleSpringModel.initialise(conf)
+lattice, bead_info = MicrotubuleSpringModel.initialise(conf)
 
-Nt = 1000
-step = 10
+Nt = 200
+step = 1
 time = collect(0:step:Nt)
 E = zeros((6,length(time)))
-E[:,1] = total_energy(beads, bead_info)
+E[:,1] = total_energy(lattice, bead_info)
 
 @showprogress for i in 1:Nt
-    iterate!(beads, bead_info, conf, conf.iter_pars)
+    iterate!(lattice, bead_info, conf, conf.iter_pars)
     if i % step == 0
-        E[:,i÷step+1] = total_energy(beads, bead_info)
+        E[:,i÷step+1] = total_energy(lattice, bead_info)
     end
 end
 

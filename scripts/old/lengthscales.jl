@@ -31,5 +31,7 @@ r = S*a/N
 R = N*dx/2π
 δx = 2*R*sin(dx/(2*R))
 l0_lat = sqrt(r^2 + δx^2)
+ϕ = atan(r,δx)
+
 
 Tk_B = 1.381e-5*300

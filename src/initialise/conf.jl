@@ -135,16 +135,13 @@ end
 Initialise the dimer as a lattice and construct the bond directions
 """
 function initialise_dimer(conf::MicrotubuleConfig)
-    @unpack S, N, a, dx = conf.lattice
-
+    a = conf.lattice.a
     dirs = Dict(
         true => bond_directions(conf.alpha),
         false => bond_directions(conf.beta)
     )
 
-    beads, structure = create_dimer(dirs, conf.spring_consts, a, dx; S=S, N=N)
-
-    return beads, structure
+    return create_dimer(dirs, conf.spring_consts, a)
 
 end
 
