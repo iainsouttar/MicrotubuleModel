@@ -16,9 +16,12 @@ damp_theta = 0.02487
 F = 0.05
 
 [spring_consts]
-k_long = 3.5
+K_in = 2.0
+K_long = 2.0
+K_lat = 8.5
+k_long = 3.0
 k_lat = 14.0
-k_in = 3.5
+k_in = 3.0
 k_in_kin = 8.0
 l0_long = 4.05
 l0_lat = 5.165

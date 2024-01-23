@@ -7,8 +7,6 @@ dx = 5.13
 
 [iter_pars.euler]
 dt = 0.2
-#Tk_B = 0.002143
-#Tk_B = 0.016143
 damp_x = 0.1326
 damp_theta = 0.02487
 
@@ -16,6 +14,9 @@ damp_theta = 0.02487
 [external_force.none]
 
 [spring_consts]
+K_in = 2.0
+K_long = 2.0
+K_lat = 8.5
 k_long = 3.0
 k_lat = 14.0
 k_in = 3.0
