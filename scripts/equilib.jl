@@ -20,15 +20,15 @@ conf = from_toml(MicrotubuleConfig, "config/equilibrium.toml")
 lattice, bead_info = MicrotubuleSpringModel.initialise(conf)
 
 Nt = 200
-step = 1
-time = collect(0:step:Nt)
+stp = 1
+time = collect(0:stp:Nt)
 E = zeros((6,length(time)))
 E[:,1] = total_energy(lattice, bead_info)
 
 @showprogress for i in 1:Nt
     iterate!(lattice, bead_info, conf, conf.iter_pars)
-    if i % step == 0
-        E[:,i÷step+1] = total_energy(lattice, bead_info)
+    if i % stp == 0
+        E[:,i÷stp+1] = total_energy(lattice, bead_info)
     end
 end
 

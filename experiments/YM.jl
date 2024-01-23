@@ -18,7 +18,7 @@ end
 
 function main!(beads, bead_info, F, conf, stp, Nt, L0)
     ext = zeros(Nt÷stp+1)
-    conf = @set conf.external_force = MicrotubuleSpringModel.YoungsModulusTest(F, 13)
+    conf = Setfield.@set conf.external_force = MicrotubuleSpringModel.YoungsModulusTest(F, 13)
     @showprogress for i in 1:Nt
         iterate!(beads, bead_info, conf, conf.iter_pars)
         if i % stp == 0
@@ -41,14 +41,13 @@ L0 = microtubule_length(beads, conf.lattice)
 
 forces = 0.0:0.1:0.5
 Nt = 50_000
-step = 50
-time = 0:step:Nt
+stp = 50
 
 stress = 13*forces ./ surface_area(10.61,2)
 strain = zeros(length(forces))
 
 for (i,F) in enumerate(forces)
-    ext = main!(beads, bead_info, F, conf, step, Nt, L0)
+    ext = main!(beads, bead_info, F, conf, stp, Nt, L0)
     @info F, ext[end]
     strain[i] = ext[end] / L0
 end

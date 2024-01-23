@@ -7,8 +7,8 @@ conf = set_bond_angles(conf)
 beads, bead_info = MicrotubuleSpringModel.initialise(conf)
 
 Nt = 1_000
-step = 200
-time = 0:step:Nt
+stp = 200
+time = 0:stp:Nt
 
 for i in 1:Nt
     iterate!(beads, bead_info, conf_burnin, conf_burnin.iter_pars)
@@ -32,11 +32,11 @@ f
 
 
 
-# simulate Nt iterations and visualise every "step" iterations 
-p = Progress(Nt÷step+1)
-frames = range(1, Nt÷step+1, step=1)
+# simulate Nt iterations and visualise every "stp" iterations 
+p = Progress(Nt÷stp+1)
+frames = range(1, Nt÷stp+1, step=1)
 record(f, "figures/protofilament-det.mp4", frames, framerate=25) do i
-    for t in 1:step
+    for t in 1:stp
         iterate!(beads, bead_info, conf, conf.iter_pars)
     end
 

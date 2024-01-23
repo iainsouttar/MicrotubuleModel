@@ -16,8 +16,8 @@ conf = set_bond_angles(conf)
 lattice, bead_info = MicrotubuleSpringModel.initialise(conf)
 
 Nt = 500
-step = 10
-time = 0:step:Nt
+stp = 10
+time = 0:stp:Nt
 
 GLMakie.activate!()
 GLMakie.closeall()

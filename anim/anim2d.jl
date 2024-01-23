@@ -15,8 +15,8 @@ conf = set_bond_angles(conf)
 beads, bead_info = MicrotubuleSpringModel.initialise(conf)
 
 Nt = 2000
-step = 10
-time = 0:step:Nt
+stp = 10
+time = 0:stp:Nt
 
 beads_obs = Observable(beads)
 pts = @lift([Point2f(b.x[1],b.x[3]) for b in $(beads_obs)])
@@ -33,11 +33,11 @@ hidespines!(ax)
 scatter!(ax, pts, color=color, marker=:circle, markersize=40)
 f
 
-# simulate Nt iterations and visualise every "step" iterations 
-p = Progress(Nt÷step+1)
-frames = range(1, Nt÷step+1, step=1)
+# simulate Nt iterations and visualise every "stp" iterations 
+p = Progress(Nt÷stp+1)
+frames = range(1, Nt÷stp+1, stp=1)
 record(f, "figures/anim_flat_YM.mp4", frames, framerate=25) do i
-    for t in 1:step
+    for t in 1:stp
         iterate!(beads, bead_info, conf, conf.iter_pars)
     end
 

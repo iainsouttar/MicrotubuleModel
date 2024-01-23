@@ -45,7 +45,7 @@ function main!(F, conf, num_rings, Nt)
 end
 
 Nt = 1_000
-time = 0:step:Nt
+time = 0:stp:Nt
 filename = "bending_stiffness_test.csv"
 
 df = DataFrame(length=[0], stiffness=[0])
@@ -81,7 +81,7 @@ end
 
 using DataFrames
 
-data, header = readdlm("results/processed/bending_stiffness.csv", ',', header=true)
+data, header = readdlm("results/processed/bending_stiffness2.csv", ',', header=true)
 
 df = DataFrame(data, vec(header))
 

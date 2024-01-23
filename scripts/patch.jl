@@ -55,7 +55,7 @@ function extensions!(pts, ext, positions, info)
 end
 
 Nt = 50_000
-step = 200
+stp = 200
 path = "results/raw"
 
 conf = from_toml(MicrotubuleConfig, "config/kinesin.toml")
