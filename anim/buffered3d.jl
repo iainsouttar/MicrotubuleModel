@@ -1,3 +1,8 @@
+"""
+Animates a 3d visualisation of the MT given raw data from a csv file.
+Loads the data a row at a time in case the dataset is large.
+"""
+
 #  VS Code workaround: https://github.com/julia-vscode/julia-vscode/issues/800
 if isdefined(@__MODULE__, :LanguageServer)
     @info "Using VS Code workaround..."

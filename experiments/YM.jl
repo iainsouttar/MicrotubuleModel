@@ -67,7 +67,7 @@ sol, YM, err = fit_YM(data)
 
 print(YM, " +/- " , err)
 
-x = 0.0:0.00001:maximum(stress)*1.05
+x = range(0,maximum(stress)*1.05, length=100)
 est = predict(sol, DataFrame(X=x), interval=:confidence)
 
 
@@ -83,14 +83,11 @@ scatter!(ax, stress, strain)
 limits!(ax,0.0, stress[end]*1.02 ,0.0, strain[end]*1.02)
 f
 
-save_to_csv("young-modulus-fit.csv", collect(x), [est.prediction, est.lower, est.upper])
-save_to_csv("young-modulus-data.csv", stress, [strain])
-
 using CSV 
 
 est[!, "x"] = collect(x)
 select!(est, :x, Not([:x]))
-save_to_csv("young-modulus-fit-2.csv", est)
+save_to_csv("young-modulus-fit.csv", est)
 
-save_to_csv("young-modulus-data-2.csv", DataFrame(stress=stress, strain=strain))
+save_to_csv("young-modulus-data.csv", DataFrame(stress=stress, strain=strain))
 

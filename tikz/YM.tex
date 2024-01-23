@@ -4,11 +4,8 @@
 \input{style.tex}
 \usepackage{siunitx}
 
-\definecolor{backgroundcol}{HTML}{F8F5EE}
-\pagecolor{backgroundcol}
-
-\pgfplotstableread[col sep = comma]{young-modulus-fit-2.csv}\fit
-\pgfplotstableread[col sep = comma]{young-modulus-data-2.csv}\data
+\pgfplotstableread[col sep = comma]{young-modulus-fit.csv}\fit
+\pgfplotstableread[col sep = comma]{young-modulus-data.csv}\data
 
 \begin{document}
 \begin{tikzpicture}
@@ -21,7 +18,7 @@
         tick align=outside,
     ]
         \addplot+[mark=none] table [x = x, y = prediction] {\fit};
-        \addlegendentry{$Y=\qty{1.21}{\giga\pascal}$}
+        \addlegendentry{$Y=\qty{1.072}{\giga\pascal}$}
 
         \pgfplotsset{cycle list name=list1}
         \addplot+[only marks] table [x = stress, y = strain] {\data};

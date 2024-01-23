@@ -10,6 +10,8 @@ end
 using CairoMakie
 CairoMakie.activate!()
 
+FILENAME = "anim2d"
+
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/youngs_modulus.toml")
 conf = set_bond_angles(conf)
 beads, bead_info = MicrotubuleSpringModel.initialise(conf)
@@ -35,8 +37,8 @@ f
 
 # simulate Nt iterations and visualise every "stp" iterations 
 p = Progress(Nt÷stp+1)
-frames = range(1, Nt÷stp+1, stp=1)
-record(f, "figures/anim_flat_YM.mp4", frames, framerate=25) do i
+frames = range(1, Nt÷stp+1, step=1)
+record(f, "figures/$FILENAME.mp4", frames, framerate=25) do i
     for t in 1:stp
         iterate!(beads, bead_info, conf, conf.iter_pars)
     end

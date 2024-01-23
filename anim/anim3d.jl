@@ -9,6 +9,8 @@ end
 
 using ProgressMeter
 
+FILENAME = "anim3d"
+
 conf = from_toml(MicrotubuleSpringModel.RotationConfig, "config/stochastic.toml")
 
 conf = set_bond_angles(conf)
@@ -27,7 +29,7 @@ bead_plots = plot_individual!(scene, beads, bead_info)
 scene
 
 p = Progress(Nt)
-Makie.record(scene, "figures/anim2.mp4", 1:Nt) do i
+Makie.record(scene, "figures/$FILENAME.mp4", 1:Nt) do i
     iterate!(lattice, bead_info, conf, conf.iter_pars)
     for (n, b) in enumerate(beads)
         translate!(bead_plots[n], b.x...)
