@@ -23,7 +23,6 @@ function bead_energy(
     b::BeadPars
 )
     E = MVector{6,Float64}(zeros(6))
-    #E = 0.0
 
     for (k, K, l0, dir, bx, idx) in zip(b.lin_consts, b.bend_consts, b.lengths, b.directions, bonds, indices)
         # transform bond direction according to bead orientation
@@ -40,7 +39,6 @@ end
 function total_energy(lattice, bead_info)
     Ntot = length(lattice)
     E = zeros(Float64, (6, Ntot))
-    #E = zeros(Float64, length(lattice))
     @inbounds @fastmath @threads for i in 1:length(lattice)
         b = bead_info[i]
         bonds = lattice.x[b.bonds]

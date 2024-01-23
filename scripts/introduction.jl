@@ -16,6 +16,8 @@ conf = set_bond_angles(conf)
 
 lattice, bead_info = initialise(conf)
 
+
+
 @showprogress for i in 1:Nt
     iterate!(lattice, bead_info, conf, conf.iter_pars)
 end

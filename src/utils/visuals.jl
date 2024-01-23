@@ -1,9 +1,9 @@
 
-ColorSchemes.colorschemes[:COLORSCHEME] = ColorScheme([colorant"#E64B35",colorant"#4DBBD5",colorant"#00A087",colorant"#3C5488", colorant"#F39B7F", colorant"#8491B4", colorant"#91D1C2"])
+ColorSchemes.colorschemes[:nature] = ColorScheme([colorant"#E64B35",colorant"#4DBBD5",colorant"#00A087",colorant"#3C5488", colorant"#F39B7F", colorant"#8491B4", colorant"#91D1C2"])
 
 COLORSCHEME = ColorScheme([colorant"#E64B35",colorant"#4DBBD5",colorant"#00A087",colorant"#3C5488", colorant"#F39B7F", colorant"#8491B4", colorant"#91D1C2"])
 
-COLORS = Dict(
+BEADCOLORS = Dict(
     (true, false) => COLORSCHEME.colors[1], 
     (false, false) => COLORSCHEME.colors[2],
     (true, true) => COLORSCHEME.colors[3],
@@ -31,7 +31,7 @@ function GLMakie.plot!(scene, lattice::Lattice, info::Vector{BeadPars}; a=4.05, 
     end
 
     for (x,kin, b_) in zip(lattice.x, lattice.kinesin, info)
-        mesh!(scene, Sphere(Point3f(x), a/4), color=COLORS[(b_.α, kin)], shininess=32.0)
+        mesh!(scene, Sphere(Point3f(x), a/4), color=BEADCOLORS[(b_.α, kin)], shininess=32.0)
     end
 
     GLMakie.scale!(scene, 0.05, 0.05, 0.05)
@@ -43,7 +43,7 @@ end
 function plot_individual!(scene, lattice::Lattice, info::Vector{BeadPars}; a=8.05)
     beads = []
     for (x, kin, b_) in zip(lattice.x, lattice.kinesin, info)
-        bead = mesh!(scene, Sphere(Point3f(x), a/4), color=COLORS[(b_.α, kin)], shininess=32.0)
+        bead = mesh!(scene, Sphere(Point3f(x), a/4), color=BEADCOLORS[(b_.α, kin)], shininess=32.0)
         push!(beads, bead)
     end
 
@@ -69,13 +69,13 @@ end
 
 function plot_flat!(ax::Axis, lattice::Lattice, bead_info::Vector{BeadPars}; markersize=40)
     pts = Vector{Point2f}([Point2f(x[1],x[3]) for x in lattice.x])
-    color = [COLORS[(b_.α, kin)] for (kin,b_) in zip(lattice.kinesin, bead_info)]
+    color = [BEADCOLORS[(b_.α, kin)] for (kin,b_) in zip(lattice.kinesin, bead_info)]
     return scatter!(ax, pts, color=color, marker=:circle, markersize=markersize)
 end
 
 
 
-function plot_E!(ax, time, E)
+function plot_energy!(ax, time, E)
     labels = [L"E_{lat}^r", L"E_{long}^r", L"E_{in}^r", L"E_{lat}^\theta", L"E_{long}^\theta", L"E_{in}^\theta"]
     E_band = cumsum(E,dims=1)
     E_tot = E_band[end,:]

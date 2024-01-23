@@ -54,6 +54,7 @@ export
     plot,
     plot_flat!,
     plot_individual!,
+    plot_energy!,
     colorschemes,
     COLORSCHEME,
 

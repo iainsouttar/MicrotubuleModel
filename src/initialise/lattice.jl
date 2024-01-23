@@ -24,6 +24,7 @@ function sort_spring_consts(consts::SpringConst, α::Bool)
     @unpack l0_lat, l0_long, l0_in = consts
     @unpack K_long, K_lat, K_in = consts
 
+    # flip intrinsic/longitudinal bond based on alpha/beta
     (k_north, l0_north) = α ? (k_long, l0_long) : (k_in, l0_in)
     (k_south, l0_south) = α ? (k_in, l0_in) : (k_long, l0_long)
     (K_north, K_south) = α ? (K_long, K_in) : (K_in, K_long)
@@ -110,7 +111,7 @@ function create_patch(
         for j in 1:N_lat
             idx = (i-1)*N_lat+j
             if N_lat==N
-                lat, (north, south) = neighbours(idx, N_long*N_lat)
+                lat, (north, south) = neighbours(idx, N_long*N_lat, N=N, S=S)
             else
                 lat = lateral_nn_patch(idx, N_lat)
                 (north, south) = long_nn_patch(idx, N_lat, N_long)
@@ -122,14 +123,18 @@ function create_patch(
 
             k, l0, K = sort_spring_consts(consts, alpha[j,i])
 
+            # only attach the bead to beads which exist
+            # number of bonds not always 4!
+            nonzero = bonds .!= 0
+
             # construct all info about bond stiffness & directions etc
             bead_info[idx] = BeadPars(
                 alpha[j,i], 
-                bonds[bonds .!= 0],
-                dirs[alpha[j,i]][bonds .!= 0],
-                k[bonds .!= 0],
-                K[bonds .!= 0],
-                l0[bonds .!= 0]
+                bonds[nonzero],
+                dirs[alpha[j,i]][nonzero],
+                k[nonzero],
+                K[nonzero],
+                l0[nonzero]
             )
         end
     end
@@ -174,7 +179,7 @@ Construct a full lattice of beads connected by springs.
 - `Lattice`: lattice of the two connected beads
 - `Vector{BeadPars}`: bead connections and alpha/beta type
 """
-function create_dimer(dirs, consts, a::Real, δx::Real; S::Int=3, N::Int=13)
+function create_dimer(dirs, consts, a::Real)
     x = [BeadPos(0,0,0), BeadPos(0,0,a)]
     q = quat_from_axisangle([0,0,1],-π/2)
     kinesin = [false, false]

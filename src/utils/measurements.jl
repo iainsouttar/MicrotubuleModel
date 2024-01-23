@@ -6,7 +6,6 @@ function microtubule_length(beads, consts)
     last = @view beads.x[Ntot-N:end]
     # average axial distance between first and last rings of beads
     tot = mapreduce((a,b)->abs(a[3]-b[3]), +, beads.x[1:N], last)
-    # tot = mapreduce((a,b)->abs(a.x[3]-b.x[3]), +, beads[1:N], last)
     return tot / N
 end
 

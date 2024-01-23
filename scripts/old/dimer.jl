@@ -11,7 +11,7 @@ conf = from_toml(MicrotubuleConfig, "config/stochastic.toml")
 
 conf = set_bond_angles(conf)
 
-beads, bead_info = MicrotubuleSpringModel.initialise_PF(conf)
+beads, bead_info = initialise_dimer(conf)
 
 conf_burnin = deepcopy(conf)
 conf_burnin = @set conf_burnin.external_force = MicrotubuleSpringModel.NoExternalForce()
@@ -34,7 +34,6 @@ end
 l = mt_length(beads)
 
 strain = (l - L0) / L0
-#stress = conf.external_force.F / (2π*4)#/ surface_area(10.62, 2)
 stress / strain
 
-mt_length(beads) = norm(beads.x[1]-beads.x[end])
+microtubule_length(beads) = norm(beads.x[1]-beads.x[end])

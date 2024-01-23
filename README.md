@@ -27,6 +27,12 @@ Once a config has been loaded, the MT can be constructed using the `create_latti
 
 Examples of various simulations for specific tests can be found in `experiments/`.
 
+## Scripts
+
+In the `scripts/` directory, various files can be found to simulate and visualise MTs. Hopefully the context is clear even though they are usually rough workings.
+
+`lengthscales.jl` has the derivation of the values for the damping constants as well as the Brownian motion values and equilibrium spring lengths laterally.
+
 ## TODO 
 
 - [ ] ensure lattice can be constructed with different protofilament numbers etc 
