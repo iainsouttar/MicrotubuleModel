@@ -9,16 +9,20 @@ Calculate then aggregate the forces and torques on each bead due to internal int
     @inbounds @fastmath @threads for i in 1:N
         b = bead_info[i]
         bonds = lattice.x[b.bonds]
-        torque[:,i], F[:,i], F_[:,:,i] = bending_and_spring_forces(lattice.x[i], lattice.q[i], bonds, b)
-    end
+        bond_orients = lattice.q[b.bonds]
+        torque[:,i], F[:,i], F_[:,:,i] = bending_and_spring_forces(lattice.x[i], lattice.q[i], bonds, b, bond_orients)
 
+
+    end
     @threads for i in 1:N
         b = bead_info[i]
         for j in 1:lastindex(b.bonds)
             @. F[:, b.bonds[j]] += F_[:, j, i]
         end
     end
+
 end
+
 
 
 """
@@ -26,19 +30,27 @@ end
 
 Calculate 3D torque and force acting on bead `b1` and its neighbours due to the bond angle bending and spring force at `b1`. Updates overall force vectors and returns torque on `b1`.
 """
-function bending_and_spring_forces(x, q, bonds, b)
+function bending_and_spring_forces(x, q, bonds, b, bond_orients)
     @unpack lin_consts, bend_consts, lengths, directions = b
     F_ = MMatrix{3, 4, Float64}(undef)
     torque = MVector{3,Float64}(0,0,0)
     F1 = MVector{3,Float64}(0,0,0)
-    for (i, (k, K, l0, dir, bx)) in enumerate(zip(lin_consts, bend_consts, lengths, directions, bonds))
+    K_torque = 1
+    for (i, (k, K, l0, dir, bx, bq)) in enumerate(zip(lin_consts, bend_consts, lengths, directions, bonds, bond_orients))
         rhat, d = norm_and_mag(bx-x)
         # transform bond direction according to bead orientation
         v = orientate_vector(dir, sign(q))
         # torque from diff between rest direction v and actual r
         τ, F = bending_torque_and_force(v, rhat, d, K)
+
+        #torque from torsion
+        orientationi = orientate_vector(BondDirec(1.0,0.0,0.0), sign(q))
+        orientationj = orientate_vector(BondDirec(1.0,0.0,0.0), sign(bq))
+        τ1 = torsion_torque(rhat, d, orientationi,  orientationj, K_torque)
+        
+        
         @. F_[:,i] = -F
-        torque += τ
+        torque += τ + τ1
         F1 += F
         F1 += spring_force(rhat, d, l0, k)
     end
@@ -62,6 +74,24 @@ Calculate the torque and force due to the bond angle bending between the natural
     # F = -K*sin(θ)θ̂/|r|
     force = -K/d*(v - rdotv*rhat)
     return torque, force
+end
+
+
+"""
+    torsion_torque(v, rhat, d, K)
+
+Calculate the torque due to the bond angle torsion between two particles i and j, given the bond direction and the two orientations. Force will always be 0
+"""
+@inline @fastmath function torsion_torque(rhat, d, zi, zj, K_torque)
+    if any(all(dot(zi,zj) .≈ 1))
+        return zeros(3)
+    end
+    
+
+    rdotv = min(1, abs(dot(zi,zj)))
+    # τ = K*sin(ϕ)*n̂
+    torque = K_torque*sqrt(1.0-rdotv^2)*rhat/d
+    return torque
 end
 
 

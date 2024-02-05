@@ -19,7 +19,7 @@ conf = from_toml(MicrotubuleConfig, "config/protofilamentv2.toml")
 
 lattice, bead_info = initialise(conf)
 
-Nt = 100000
+Nt = 100
 stp = 1
 time = collect(0:stp:Nt)
 E = zeros((6,length(time)))
