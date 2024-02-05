@@ -13,6 +13,7 @@ using Colors
 using GLMakie
 using Configurations
 using Setfield
+using Revise
 
 using DelimitedFiles, CSV
 
