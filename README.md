@@ -33,13 +33,3 @@ In the `scripts/` directory, various files can be found to simulate and visualis
 
 `lengthscales.jl` has the derivation of the values for the damping constants as well as the Brownian motion values and equilibrium spring lengths laterally.
 
-## TODO 
-
-- [ ] ensure lattice can be constructed with different protofilament numbers etc 
-- [ ] ensure the lattice is then still stable with the same natural bond angles.
-- [ ] Test various kinesin mechanisms 
-
-## Potential extensions
-
-- [ ] In theory the simulations could be faster if the algorithm iterates over the springs and distributes the forces to the beads rather than directly iterating over the beads.
-- [ ] 
