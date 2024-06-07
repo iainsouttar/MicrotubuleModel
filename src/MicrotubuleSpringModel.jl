@@ -14,6 +14,7 @@ using DelimitedFiles
 using CSV
 using DataFrames
 using ProgressMeter: @showprogress
+using LightGraphs
 
 using GLMakie
 using ColorSchemes
@@ -62,6 +63,7 @@ export
 
 
 BeadPos = MVector{3, Float64}
+KinType = MVector{2,Bool}
 
 include("utils/quaternions.jl")
 

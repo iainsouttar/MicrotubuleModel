@@ -31,7 +31,7 @@ function GLMakie.plot!(scene, lattice::Lattice, info::Vector{BeadPars}; a=4.05, 
     end
 
     for (x,kin, b_) in zip(lattice.x, lattice.kinesin, info)
-        mesh!(scene, Sphere(Point3f(x), a/4), color=BEADCOLORS[(b_.α, kin)], shininess=32.0)
+        mesh!(scene, Sphere(Point3f(x), a/8), color=BEADCOLORS[(b_.α, kin)], shininess=32.0)
     end
 
     GLMakie.scale!(scene, 0.05, 0.05, 0.05)
@@ -76,12 +76,12 @@ end
 
 
 function plot_energy!(ax, time, E)
-    labels = [L"E_{lat}^r", L"E_{long}^r", L"E_{in}^r", L"E_{lat}^\theta", L"E_{long}^\theta", L"E_{in}^\theta"]
+    labels = [L"E_{lat}^r", L"E_{long}^r", L"E_{in}^r", L"E_{lat}^\theta", L"E_{long}^\theta", L"E_{in}^\theta", L"Torsion"]
     E_band = cumsum(E,dims=1)
     E_tot = E_band[end,:]
     lines!(ax,time, E_tot, color=:black, linewidth=4)
     band!(ax, time, 0, E_band[1,:], color=COLORSCHEME.colors[1], label=labels[1])
-    for i in 1:5
+    for i in 1:6
         lines!(ax,time, E_band[i,:], color=:black, linewidth=2)
         band!(ax, time, E_band[i,:], E_band[i+1,:], color=MicrotubuleSpringModel.COLORSCHEME.colors[i+1], label=labels[i+1])
     end

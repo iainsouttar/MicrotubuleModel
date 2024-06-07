@@ -5,7 +5,9 @@
 Return neighbours in the lateral direction for bead `idx` of `total`
 """
 function lateral_nn(idx::Int, total::Int; N::Int=13, S::Int=3)::Tuple{Int,Int}
-    if idx % N == 0 
+    if N==1
+        return(0,0)
+    elseif idx % N == 0 
         if idx > total-(S-1)*N-1
             return (0, idx-1)
         end
@@ -69,18 +71,24 @@ end
 Return neighbours in the lateral and longitudinal direction for bead `idx` of `total`.
 """
 function neighbours(idx::Int, total::Int; N::Int=13, S::Int=3)::Tuple{Tuple{Int,Int}, Tuple{Int, Int}}
+    #print(N,S)
+    #This hard coding should be changed
+    #N = 1
+    #S = 1
     return lateral_nn(idx, total, N=N, S=S), long_nn(idx, total, N=N)
 end
 
 
-function intra_dimer_index(idx, total, α)
-    lat, long = MicrotubuleSpringModel.neighbours(idx, total)
+function intra_dimer_index(idx, total, α, N, S)
+    lat, long = MicrotubuleSpringModel.neighbours(idx, total, N=N, S=S)
+    #("\n", lat, long, "\n")
     return α ? 2+(lat[2]!=0)-(long[1]==0) : 1
 end
 
 
-function bond_indices(idx, total, α)
-    lat, long = MicrotubuleSpringModel.neighbours(idx, total)
+function bond_indices(idx, total, α,N,S)
+    lat, long = MicrotubuleSpringModel.neighbours(idx, total, N=N, S=S)
+    #print("hello",lat, long, "hello")
     bonds = []
     if long[1] != 0
         push!(bonds, α ? 3 : 2)

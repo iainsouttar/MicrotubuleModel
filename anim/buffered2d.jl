@@ -14,8 +14,8 @@ end
 
 using CSV
 
-num_rings = 30
-filename = "fluctuations-free-$num_rings.csv"
+num_rings = 5
+filename = "fluctuations-free-test_startNotorsion.csv"
 path = "results/raw"
 
 function update_positions!(x, row, N)
@@ -25,7 +25,7 @@ function update_positions!(x, row, N)
     return
 end
 
-N = num_rings*13
+N = num_rings
 open(path*"/"*filename, "r") do io
     global steps = countlines(io)
 end
@@ -37,19 +37,19 @@ open(path*"/"*filename) do io
     update_positions!(x, row, N)
 
     x_obs = Observable(x)
-    pts = @lift([Point2f(xi[1],xi[3]) for xi in $(x_obs)])
+    pts = @lift([Point2f(xi[1],xi[2]) for xi in $(x_obs)])
 
     CairoMakie.activate!()
     f = Figure(resolution=(1500,1500), backgroundcolor=colorant"#F8F5EE")
     ax = Axis(f[1,1], aspect=DataAspect(), backgroundcolor=colorant"#F8F5EE")
-    limits!(-15,15,-10,num_rings*4.05+10)
+   #limits!(-30,30,-10,num_rings*4.05+10)
     hidedecorations!(ax)
     hidespines!(ax)
-    scatter!(ax, pts, color=[MicrotubuleSpringModel.COLORS[(iseven(i÷13),false)] for i in 1:N], marker=:circle, markersize=50, strokecolor=:black)
+    scatter!(ax, pts, marker=:circle, markersize=50, strokecolor=:black)
     f
 
     p = Progress(steps)
-    record(f, "figures/flat-$num_rings-light.mp4", iterator) do row
+    record(f, "figures/flat-$num_rings-test_startNotorsionxy.mp4", iterator) do row
         update_positions!(x, row, N)
         x_obs[] = x
         next!(p)

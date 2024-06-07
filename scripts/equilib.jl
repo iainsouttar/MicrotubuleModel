@@ -22,13 +22,13 @@ lattice, bead_info = MicrotubuleSpringModel.initialise(conf)
 Nt = 200
 stp = 1
 time = collect(0:stp:Nt)
-E = zeros((6,length(time)))
-E[:,1] = total_energy(lattice, bead_info)
+E = zeros((7,length(time)))
+E[:,1], cosAngles = total_energy(lattice, bead_info)
 
 @showprogress for i in 1:Nt
     iterate!(lattice, bead_info, conf, conf.iter_pars)
     if i % stp == 0
-        E[:,i÷stp+1] = total_energy(lattice, bead_info)
+        E[:,i÷stp+1], cosAngles = total_energy(lattice, bead_info)
     end
 end
 
@@ -40,4 +40,4 @@ ax = Axis(f[1,1])
 plot_energy!(ax, time, E)
 f
 
-scene = plot_3d(lattice, bead_info)
+#scene = plot_3d(lattice, bead_info)

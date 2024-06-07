@@ -20,8 +20,8 @@ else
     using MicrotubuleSpringModel
 end
 
-Nt = 100_000
-stp = 200
+Nt = 10000
+stp = 20
 filename = "fluctuations-free-30.csv"
 path = "results/raw"
 

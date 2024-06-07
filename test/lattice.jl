@@ -15,9 +15,9 @@ end
     a = 4.05
     δx = 5.13
     lattice, bead_info = create_lattice(dirs, MicrotubuleSpringModel.SpringConst(), 5, a, δx)
-    Ntot = length(lattice)
+    Ntot = length(lattice.x)
 
-    @test length(lattice) == 5*13
+    @test length(lattice.x) == 5*13
     @test bead_info[5].α == false
     @test bead_info[23].α == true
     @test bead_info[3*13+5].α == true
