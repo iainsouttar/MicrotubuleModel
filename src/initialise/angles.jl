@@ -2,8 +2,15 @@
 """
 `AlphaConfirm` specifies the bond directions for each of the four bonds for an alpha tubulin using an Euler angle representation.
 """
+# @option "alpha struct" struct AlphaConfirm
+#     north::SVector{2,Float64} = [-π/2, 0.2]
+#     east::SVector{2,Float64} = [0, π/2]
+#     south::SVector{2,Float64} = [-π/2, π]
+#     west::SVector{2,Float64} = [π,π/2]
+# end
+
 @option "alpha struct" struct AlphaConfirm
-    north::SVector{2,Float64} = [-π/2, 0]
+    north::SVector{2,Float64} = [-π/2, 0.2]
     east::SVector{2,Float64} = [π/13, π/2+0.1819]
     south::SVector{2,Float64} = [-π/2, π]
     west::SVector{2,Float64} = [π-π/13,π/2-0.1819]
@@ -12,8 +19,15 @@ end
 """
 `BetaConfirm` specifies the bond directions for each of the four bonds for an beta tubulin using an Euler angle representation.
 """
+# @option "beta struct" struct BetaConfirm
+#     north::SVector{2,Float64} = [-π/2,0.2]
+#     east::SVector{2,Float64} = [0, π/2]
+#     south::SVector{2,Float64} = [-π/2, π]
+#     west::SVector{2,Float64} = [π,π/2]
+# end
+
 @option "beta struct" struct BetaConfirm
-    north::SVector{2,Float64} = [-π/2, 0]
+    north::SVector{2,Float64} = [-π/2, 0.2]
     east::SVector{2,Float64} = [π/13, π/2+0.1819]
     south::SVector{2,Float64} = [-π/2, π]
     west::SVector{2,Float64} = [π-π/13,π/2-0.1819]

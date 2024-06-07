@@ -2,6 +2,8 @@
 
 figures/
 results/
+plots/
 
 **/pdf
 **/.aux
+**/.jld2

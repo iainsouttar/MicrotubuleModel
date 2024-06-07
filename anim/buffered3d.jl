@@ -13,7 +13,7 @@ else
 end
 
 
-filename = "fluctuations-free.csv"
+filename = "fluctuations-free-30.csv"
 path = "results/raw"
 
 function update_positions!(x, row, N)
@@ -23,10 +23,11 @@ function update_positions!(x, row, N)
     return
 end
 
-N = 100*13
+N = 10
 open(path*"/"*filename, "r") do io
-    steps = countlines(io)
+    global steps = countlines(io)
 end
+print(steps)
 x = Vector{BeadPos}(undef, N)
 
 print(N)

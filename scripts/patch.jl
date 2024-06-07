@@ -22,19 +22,62 @@ end
 using Accessors
 
 """Change the constants for a dimer, ie. an alpha+beta"""
-function attach_kinesin!(lattice, bead_info, i::Int)
-    lattice.kinesin[i] = true
+function attach_kinesin!(lattice, bead_info, N, S, i::Int)
+    #we want this to change a dimer, rather than between dimers, this
+    #is what the pos business is doing
+    lattice.kinesin[i,:] = [true, true]
     b = bead_info[i]
-    pos = intra_dimer_index(i, length(lattice), b.α)
-    bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+    pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+
+
+    #bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+    #bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+    #bead_info[i] = Accessors.@set b.bend_consts[pos] = K_in_kin
+    #bead_info[i] = Accessors.@set b.bend_consts[pos] = 0.0
+
     bead_info[i] = Accessors.@set b.lengths[pos] = l0_kin
+    #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
 
     j = bead_info[i].bonds[pos]
     b = bead_info[j]
-    lattice.kinesin[j] = true
-    pos = intra_dimer_index(j, length(lattice), b.α)
+    lattice.kinesin[j,:] = [true, true]
+    pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+    #print(j,pos)
+
+
+
+    #bead_info[j] = Accessors.@set b.lin_consts[pos] = k_kin
+    bead_info[j] = Accessors.@set b.lengths[pos] = l0_kin
+    #bead_info[j] = Accessors.@set b.bend_consts[pos] = K_in_kin
+
+    #bead_info[j] = Accessors.@set b.bend_consts[pos] = 0.0
+end
+
+
+"""Change the constants for a dimer, ie. an alpha+beta"""
+function make_kinesin_like!(lattice, bead_info, N, S, i::Int)
+    #we want this to change a dimer, rather than between dimers, this
+    #is what the pos business is doing
+    lattice.kinesin[i,2] = true
+    b = bead_info[i]
+    pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+
+
+    bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+    #bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+    bead_info[i] = Accessors.@set b.bend_consts[pos] = K_in_kin
+    bead_info[i] = Accessors.@set b.bend_consts[pos] = 0.0
+
+    bead_info[i] = Accessors.@set b.lengths[pos] = l0_kin
+    #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+
+
+
     bead_info[j] = Accessors.@set b.lin_consts[pos] = k_kin
     bead_info[j] = Accessors.@set b.lengths[pos] = l0_kin
+    bead_info[j] = Accessors.@set b.bend_consts[pos] = K_in_kin
+
+    bead_info[j] = Accessors.@set b.bend_consts[pos] = 0.0
 end
 
 """Calculate extensions ready for plotting bonds"""
@@ -54,47 +97,52 @@ function extensions!(pts, ext, positions, info)
     return pts, ext
 end
 
-Nt = 50_000
+Nt = 50_00
 stp = 200
 path = "results/raw"
 
-conf = from_toml(MicrotubuleConfig, "config/kinesin.toml")
+conf = from_toml(MicrotubuleConfig, "config/eulerMTkinesinLike.toml")
 conf = set_bond_angles(conf)
 lattice, bead_info = MicrotubuleSpringModel.initialise(conf)
 
 l0_kin = conf.spring_consts.l0_in_kin
 k_kin = conf.spring_consts.k_in_kin
+K_in_kin = conf.spring_consts.K_in_kin
 
-attach_kinesin!(lattice, bead_info, 30)
+attach_kinesin!(lattice, bead_info,conf.lattice.N, conf.lattice.S, 13*12+4)
+#attach_kinesin!(lattice, bead_info,conf.lattice.N, conf.lattice.S, 13*12+5)
+#attach_kinesin!(lattice, bead_info,conf.lattice.N, conf.lattice.S, 13*12+3)
+attach_kinesin!(lattice, bead_info,conf.lattice.N, conf.lattice.S, 13*14+4)
 
 
-for t in 1:Nt
+@showprogress for t in 1:Nt
     iterate!(lattice, bead_info, conf, conf.iter_pars)
 end
 
 #####################################################
 
 # Visualise stretched bonds
+num_rings = 24
 
 n_bonds = sum(length(b.bonds)*3 for b in bead_info)
 pts = Vector{Point2f}(undef, n_bonds)
 ext = Vector{Float64}(undef, n_bonds)
 
 xs = Vector{Point2f}([Point2f(xi[1],xi[3]) for xi in lattice.x])
-colors = [MicrotubuleSpringModel.COLORS[(iseven(i÷13),k)] for (i,k) in enumerate(lattice.kinesin)]
+#colors = [MicrotubuleSpringModel.COLORS[(iseven(i÷13),k)] for (i,k) in enumerate(lattice.kinesin)]
 
 extensions!(pts, ext, lattice.x, bead_info)
 
 CMAP = :plasma
 f = Figure(resolution=(1200,1000), backgroundcolor=colorant"#111111")
 ax = Axis(f[1,1], aspect=DataAspect(), backgroundcolor=colorant"#111111")
-limits!(-12,12,-2,num_rings*4.05+10)
+limits!(-12,12,35,18*4.05)
 hidedecorations!(ax)
 hidespines!(ax)
 scatter!(
     ax, xs, 
-    color=colors, marker=:circle, markersize=20, strokecolor=colorant"#111111", strokewidth=3
-)
+    marker=:circle, markersize=20, strokecolor=colorant"#111111", strokewidth=3
+) #color =colors
 lines!(ax, pts, color=ext, linewidth=15, colormap=Reverse(CMAP))
 
 Colorbar(
@@ -105,5 +153,9 @@ Colorbar(
     ticklabelcolor=:white, ticklabelsvisible=true
 )
 f
+display(f)
 
-save("figures/kinesin-strain.png", f, px_per_unit=2)
+save("figures/kinesin-strain1.png", f, px_per_unit=2)
+
+
+

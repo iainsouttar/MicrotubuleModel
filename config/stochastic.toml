@@ -1,7 +1,7 @@
 [lattice]
 S = 3
-N = 13
-num_rings = 10
+N = 14
+num_rings = 18
 a = 4.05
 dx = 5.13
 
@@ -16,9 +16,15 @@ damp_theta = 0.02487
 [external_force.none]
 
 [spring_consts]
-K_in = 2.0
-K_long = 2.0
-K_lat = 8.5
+K_alpha_in = 5.0
+K_beta_in = 0.0
+
+K_alpha_long = 2.0
+K_beta_long = 2.0
+
+K_lat = 2.0
+K_in_kin = 5.0
+
 k_long = 3.0
 k_lat = 14.0
 k_in = 3.0
@@ -27,3 +33,8 @@ l0_long = 4.05
 l0_lat = 5.21
 l0_in = 4.05
 l0_in_kin = 4.5
+K_torque_long = 0.0
+K_torque_lat = 0.0
+K_torque_in = 0.0
+K_alpha = 0.0
+K_beta = 0.0

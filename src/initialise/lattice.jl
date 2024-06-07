@@ -1,8 +1,11 @@
 
 @option "spring consts" struct SpringConst
-    K_long::Float64 = 8.5
+    K_alpha_long::Float64 = 8.5
+    K_beta_long::Float64 = 8.5
     K_lat::Float64 = 8.5
-    K_in::Float64 = 8.5
+    K_alpha_in::Float64 = 8.5
+    K_beta_in::Float64 = 8.5
+    K_in_kin::Float64 = 0.0
     k_long::Float64 = 3.5
     k_lat::Float64 = 14.0
     k_in::Float64 = 3.5
@@ -11,6 +14,11 @@
     l0_lat::Float64 = 5.21
     l0_in::Float64 = 4.05
     l0_in_kin::Float64 = 4.5
+    K_torque_long::Float64 = 1.0
+    K_torque_lat::Float64 = 1.0
+    K_torque_in::Float64 = 1.0
+    K_alpha::Float64 = 10.0
+    K_beta::Float64 = 0.0
 end
 
 """
@@ -22,18 +30,27 @@ Uses α flag to determine whether north or south bound is intra-dimer bond
 function sort_spring_consts(consts::SpringConst, α::Bool)
     @unpack k_lat, k_long, k_in = consts
     @unpack l0_lat, l0_long, l0_in = consts
-    @unpack K_long, K_lat, K_in = consts
+    @unpack K_alpha_long, K_beta_long, K_lat, K_alpha_in, K_beta_in = consts
+    @unpack K_torque_long, K_torque_lat, K_torque_in = consts
+    @unpack K_alpha, K_beta = consts
+
+
+
 
     # flip intrinsic/longitudinal bond based on alpha/beta
     (k_north, l0_north) = α ? (k_long, l0_long) : (k_in, l0_in)
     (k_south, l0_south) = α ? (k_in, l0_in) : (k_long, l0_long)
-    (K_north, K_south) = α ? (K_long, K_in) : (K_in, K_long)
-    
+    (K_north, K_south) = α ? (K_alpha_long, K_alpha_in) : (K_beta_in, K_beta_long)
+    (K_torque_north, K_torque_south) = α ? (K_torque_long, K_torque_in) : (K_torque_in, K_torque_long)
+
 
     k = [k_north, k_lat, k_south, k_lat]
     l0 = [l0_north, l0_lat, l0_south, l0_lat]
     K = [K_north, K_lat, K_south, K_lat]
-    return k, l0, K
+    K_torque = [K_torque_north, K_torque_lat, K_torque_south, K_torque_lat]
+    K_pos = [K_alpha, K_beta]
+
+    return k, l0, K, K_torque, K_pos
 end
 
 ###################################################################
@@ -45,18 +62,23 @@ struct BeadPars
     lin_consts::Vector{Float64}
     bend_consts::Vector{Float64}
     lengths::Vector{Float64}
+    torque_consts::Vector{Float64}
+    pos_consts::Float64
 end
 
 mutable struct Lattice{N}
     x::MVector{N, BeadPos}
     q::Vector{Quaternions.Quaternion}
-    kinesin::MVector{N, Bool}
+    kinesin::MMatrix{N, 2, Bool}
+    rates::MVector{N, Float64}
 end
 
-function Lattice(x, q, kinesin)
-    N = length(kinesin)
-    return Lattice{N}(x, q, kinesin)
+function Lattice(x, q, kinesin, rates)
+    N = length(rates)
+    print(N)
+    return Lattice{N}(x, q, kinesin, rates)
 end
+
 
 Base.size(l::Lattice) = size(l.kinesin)
 
@@ -104,8 +126,11 @@ function create_patch(
 
     x = [set_pos(θ, idx, R, r, z_0=a*z, N=N_lat) for (idx,(θ,z)) in enumerate(zip(angles,vertical_offset))]
     q = Vector{Quaternions.Quaternion}(undef, N_lat*N_long)
-    kinesin = MVector{N_lat*N_long, Bool}(zeros(Bool,N_lat*N_long))
+    kinesin = MMatrix{N_lat*N_long,2,Bool}(zeros(2*N_long*N_lat))
     alpha = reshape([Bool(z%2==1) for z in vertical_offset], (N_lat,N_long))
+    rates = MVector{N_lat*N_long, Float64}(zeros(N_lat*N_long))
+    #the 0 in the reshape used to be a 1
+    print(size(kinesin))
 
     for i in 1:N_long
         for j in 1:N_lat
@@ -117,30 +142,35 @@ function create_patch(
                 (north, south) = long_nn_patch(idx, N_lat, N_long)
             end
 
-            q[idx] = quat_from_axisangle([0,0,1],-π/2+angles[idx])
+            q[idx] = quat_from_axisangle([0,0,1],-π/2+angles[idx]) #+(i-1)*π/4)
             # bonds organised by north, east, south, west
             bonds = [north, lat[2], south, lat[1]]
 
-            k, l0, K = sort_spring_consts(consts, alpha[j,i])
-
+            k, l0, K, K_torque, K_pos = sort_spring_consts(consts, alpha[j,i])
             # only attach the bead to beads which exist
             # number of bonds not always 4!
             nonzero = bonds .!= 0
 
+
+            K_position = alpha[j,i] ? K_pos[1] : K_pos[2]
             # construct all info about bond stiffness & directions etc
             bead_info[idx] = BeadPars(
                 alpha[j,i], 
-                bonds[nonzero],
+                unique(bonds[nonzero]),
                 dirs[alpha[j,i]][nonzero],
                 k[nonzero],
                 K[nonzero],
-                l0[nonzero]
+                l0[nonzero],
+                K_torque[nonzero],
+                K_position
             )
         end
+
+        #q[1] = quat_from_axisangle([0,0,1], )
     end
+    #l = Lattice(x, q, kinesin, rates)
 
-
-    return Lattice(x, q, kinesin), bead_info
+    return Lattice(x, q, kinesin, rates), bead_info
 end
 
 
@@ -242,7 +272,7 @@ Set position of the bead in a lattice.
 function set_pos(θ::Real, idx::Int, R::Real, r::Real; θ_0=0.0, z_0=0.0, N=13)::BeadPos
     return BeadPos(
         R*cos(θ_0-θ),
-        R*sin(θ_0-θ),
+        R*sin(θ_0-θ), #+(idx)/4,
         z_0 + mod(idx-1,N)*r
     )
 end

@@ -1,0 +1,28 @@
+[lattice]
+S = 1
+N = 1
+num_rings = 5
+a = 4.05
+dx = 0
+
+[iter_pars.euler]
+dt = 0.01
+damp_x = 1
+damp_theta = 0.1
+
+
+[external_force.none]
+
+
+[spring_consts]
+K_in = 8.0
+K_long = 8.0
+K_lat = 0
+k_long = 3.0
+k_lat = 0.0
+k_in = 0.0
+k_in_kin = 8.0
+l0_long = 6
+l0_lat = 6
+l0_in = 6
+l0_in_kin = 6

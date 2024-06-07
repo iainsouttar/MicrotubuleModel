@@ -1,0 +1,7 @@
+27/02
+Torsion now seems to properly be working. 
+Can engineer some decreases/increases of 
+length of the protofilament via different kinesin.
+Can do this in 2d or in a spiral. Can analytically work 
+out the length of the so-called coiled proto-filament
+as well as its fully extended version. 

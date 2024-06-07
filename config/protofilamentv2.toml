@@ -1,28 +1,39 @@
 [lattice]
 S = 1
 N = 1
-num_rings = 10
+num_rings = 30
 a = 4.05
 dx = 0
 
 [iter_pars.euler]
-dt = 0.2
-damp_x = 0.1326
-damp_theta = 0.02487
-
+dt = 0.1
+damp_x = 1
+damp_theta = 0.1
 
 [external_force.none]
 
 
 [spring_consts]
-K_in = 2.0
-K_long = 2.0
+K_alpha_in = 10.0
+K_beta_in = 10.0
+
+K_alpha_long = 10.0
+K_beta_long = 0.0
+
 K_lat = 0
-k_long = 3.0
+K_in_kin = 100.0
+
+
+k_long = 5.0
 k_lat = 0.0
-k_in = 3.0
-k_in_kin = 8.0
+k_in = 5.0
+k_in_kin = 5.0
 l0_long = 4.05
 l0_lat = 5.21
 l0_in = 4.05
-l0_in_kin = 4.5
+l0_in_kin = 4.05
+K_torque_long = 5.0
+K_torque_lat = 0.0
+K_torque_in = 5.0
+K_alpha = 10.0
+K_beta = 0.0

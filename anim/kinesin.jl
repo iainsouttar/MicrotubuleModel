@@ -26,8 +26,8 @@ lattice, bead_info = MicrotubuleSpringModel.initialise(conf)
 filename = "kinesin-$(conf.lattice.num_rings).csv"
 filename_bool = "kinesin-bool-$(conf.lattice.num_rings).csv"
 
-data = Matrix{Float64}(zeros(Float64, (length(lattice)*3,1)))
-for i in 1:length(lattice)
+data = Matrix{Float64}(zeros(Float64, (length(lattice.x)*3,1)))
+for i in 1:length(lattice.x)
     data[3*(i-1)+1:3*i,1] .= lattice.x[i]
 end
 open(path*"/"*filename, "w") do io
@@ -35,8 +35,8 @@ open(path*"/"*filename, "w") do io
 end
 
 
-data = Matrix{Int}(zeros(Int, (length(lattice),1)))
-for i in 1:length(lattice)
+data = Matrix{Int}(zeros(Int, (length(lattice.x),1)))
+for i in 1:length(lattice.x)
     data[i,1] = Int(lattice.kinesin[i])
 end
 open(path*"/"*filename_bool, "w") do io
@@ -53,7 +53,7 @@ end
 
 using Accessors
 
-for i in 1:length(lattice)
+for i in 1:length(lattice.x)
     if i % 13 ∈ (6,7,8,9,10)
         b = bead_info[i]
         lattice.kinesin[i] = true
@@ -75,7 +75,7 @@ conf = @set conf.external_force = MicrotubuleSpringModel.NoExternalForce()
 end
 
 
-for i in 1:length(lattice)
+for i in 1:length(lattice.x)
     if i % 13 ∈ (6,7,8,9,10)
         b = bead_info[i]
         lattice.kinesin[i] = false
