@@ -40,19 +40,11 @@ function bead_energy(
         orientationj = orientate_vector(e2, sign(bq))
         orientationiproj = orientationi - dot(orientationi, rhat)*rhat
         orientationjproj = orientationj - dot(orientationj, rhat)*rhat
-        #E[7] = norm()
         orientationiproj = orientationiproj/norm(orientationiproj)
         orientationjproj = orientationjproj/norm(orientationjproj)
 
-        #print("\n", orientationiproj,orientationjproj, "\n")
-        #rdotv = max(-1, min(1, dot(orientationiproj,orientationjproj))) 
         rdotv = dot(orientationiproj,orientationjproj)
 
-        # τ = K*sin(ϕ)*n̂
-
-        #E[7] = 0.01*K_torque*(acos(clamp(rdotv, -1, 1)))^2
-        
-        #print("Energy:", E[7]," ", rdotv, " ", x, bx, "\n")
     end
     #print(E[7])
 
@@ -63,6 +55,7 @@ end
 function total_energy(lattice, bead_info, N, S)
     Ntot = length(lattice.x)
     E = zeros(Float64, (7, Ntot))
+    #print(size(E))
     @inbounds @fastmath @threads for i in 1:length(lattice.x)
         b = bead_info[i]
         bonds = lattice.x[b.bonds]
@@ -73,6 +66,7 @@ function total_energy(lattice, bead_info, N, S)
     end
     #lngth = orientate_vector((0,0,1), lattice.q[1])
     lngth = norm(lattice.x[1]-lattice.x[Ntot])
+    #print(size(E))
     #lngth = norm(lattice.x[1][1])
     return vec(sum(E, dims=2)), 2*E[7, :], lngth[1], E
 end

@@ -2,37 +2,54 @@
 """
 `AlphaConfirm` specifies the bond directions for each of the four bonds for an alpha tubulin using an Euler angle representation.
 """
+
+
+#uncomment the following if you want the lateral conformational change
+#where there is a change in bending angle. the 0.169 v 0.1819 is based on
+#if you want 13 or 14 to be the perfectly straight microtubule
+# (currently at 13, change to 0.169 if 14, and of course change the pi/13 to pi/14)
 # @option "alpha struct" struct AlphaConfirm
-#     north::SVector{2,Float64} = [-π/2, 0.2]
-#     east::SVector{2,Float64} = [0, π/2]
+#     north::SVector{2,Float64} = [-π/2, 0.0]
+#     east::SVector{2,Float64} = [π/14, π/2+0.1819] #+0.169] #+0.1819
 #     south::SVector{2,Float64} = [-π/2, π]
-#     west::SVector{2,Float64} = [π,π/2]
+#     west::SVector{2,Float64} = [π-π/14,π/2-0.1819] #-0.169]
 # end
 
+#uncomment the following if you want the lateral conformational change
+#where there is a change in bending angle.
 @option "alpha struct" struct AlphaConfirm
-    north::SVector{2,Float64} = [-π/2, 0.2]
-    east::SVector{2,Float64} = [π/13, π/2+0.1819]
+    north::SVector{2,Float64} = [-π/2, 0.0]
+    east::SVector{2,Float64} = [π/28, π/2+0.169] #+0.1819
     south::SVector{2,Float64} = [-π/2, π]
-    west::SVector{2,Float64} = [π-π/13,π/2-0.1819]
+    west::SVector{2,Float64} = [π-π/28,π/2-0.169]
 end
 
 """
 `BetaConfirm` specifies the bond directions for each of the four bonds for an beta tubulin using an Euler angle representation.
 """
+
+
+
+#uncomment the following if you want the lateral conformational change
+#where there is a change in bending angle. the 0.169 v 0.1819 is based on
+#if you want 13 or 14 to be the perfectly straight microtubule
+# (currently at 13, change to 0.169 if 14, and of course change the pi/13 to pi/14)
 # @option "beta struct" struct BetaConfirm
-#     north::SVector{2,Float64} = [-π/2,0.2]
-#     east::SVector{2,Float64} = [0, π/2]
+#     north::SVector{2,Float64} = [-π/2, 0.0]
+#     east::SVector{2,Float64} = [π/13, π/2+0.1819] #+0.169]
 #     south::SVector{2,Float64} = [-π/2, π]
-#     west::SVector{2,Float64} = [π,π/2]
+#     west::SVector{2,Float64} = [π-π/13,π/2-0.1819] #-0.169]
 # end
 
-@option "beta struct" struct BetaConfirm
-    north::SVector{2,Float64} = [-π/2, 0.2]
-    east::SVector{2,Float64} = [π/13, π/2+0.1819]
-    south::SVector{2,Float64} = [-π/2, π]
-    west::SVector{2,Float64} = [π-π/13,π/2-0.1819]
-end
 
+#uncomment the following if you want the lateral conformational change
+#where there is a change in bending angle.
+@option "beta struct" struct BetaConfirm
+    north::SVector{2,Float64} = [-π/2, 0.0]
+    east::SVector{2,Float64} = [π/28, π/2+0.169]
+    south::SVector{2,Float64} = [-π/2, π]
+    west::SVector{2,Float64} = [π-π/28,π/2-0.169]
+end
 
 """
     bond_directions(thetas::Union{AlphaConfirm,BetaConfirm})
@@ -64,15 +81,15 @@ function calc_natural_angles(S, N, dx, a)
 
     α = MicrotubuleSpringModel.AlphaConfirm(
         [π/2, -δ],
-        [π/13, π/2+ϕ],
+        [π/N, π/2+ϕ],
         [π/2, π],
-        [π-π/13,π/2-ϕ]
+        [π-π/N,π/2-ϕ]
     )
     β = MicrotubuleSpringModel.BetaConfirm(
         [π/2, 0],
-        [π/13, π/2+ϕ],
+        [π/N, π/2+ϕ],
         [π/2, π+δ],
-        [π-π/13,π/2-ϕ]
+        [π-π/N,π/2-ϕ]
     )
     return α, β
 end

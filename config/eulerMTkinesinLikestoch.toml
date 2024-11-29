@@ -1,15 +1,15 @@
 [lattice]
 S = 3
 N = 13
-num_rings = 24
+num_rings = 48
 a = 4.05
 dx = 5.13
 
 [iter_pars.stoch_euler]
 dt = 0.2
 # this is approximately right value but inflated values show fluctuations more
-Tk_B = 0.004143
-#Tk_B = 0.01
+#Tk_B = 0.004143
+Tk_B = 0.05
 damp_x = 0.1326
 damp_theta = 0.02487
 
@@ -17,23 +17,23 @@ damp_theta = 0.02487
 [external_force.none]
 
 [spring_consts]
-K_alpha_in = 5.0
-K_beta_in = 5.0
+K_alpha_in = 15.0
+K_beta_in = 15.0
 
-K_alpha_long = 5.0
-K_beta_long = 5.0
+K_alpha_long = 2.0
+K_beta_long = 2.0
 
 K_lat = 10.0
 K_in_kin = 5.0
 
 k_long = 3.0
 k_lat = 14.0
-k_in = 3.0
+k_in = 10.0
 k_in_kin = 3.0
 l0_long = 4.05
-l0_lat = 5.21
+l0_lat = 5.087
 l0_in = 4.05
-l0_in_kin = 6.05
+l0_in_kin = 4.25
 K_torque_long = 0.0
 K_torque_lat = 0.0
 K_torque_in = 0.0

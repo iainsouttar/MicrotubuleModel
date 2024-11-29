@@ -71,10 +71,6 @@ end
 Return neighbours in the lateral and longitudinal direction for bead `idx` of `total`.
 """
 function neighbours(idx::Int, total::Int; N::Int=13, S::Int=3)::Tuple{Tuple{Int,Int}, Tuple{Int, Int}}
-    #print(N,S)
-    #This hard coding should be changed
-    #N = 1
-    #S = 1
     return lateral_nn(idx, total, N=N, S=S), long_nn(idx, total, N=N)
 end
 
@@ -85,10 +81,15 @@ function intra_dimer_index(idx, total, α, N, S)
     return α ? 2+(lat[2]!=0)-(long[1]==0) : 1
 end
 
+function lat_indices(idx, total, α, N, S)
+    lat, long = MicrotubuleSpringModel.neighbours(idx, total, N=N, S=S)
+    #("\n", lat, long, "\n")
+    return [((long[1] != 0)+1)*(lat[1]!=0), ((long[1] != 0)+1+(lat[1]!=0))*(lat[2]!=0)]
+end
+
 
 function bond_indices(idx, total, α,N,S)
     lat, long = MicrotubuleSpringModel.neighbours(idx, total, N=N, S=S)
-    #print("hello",lat, long, "hello")
     bonds = []
     if long[1] != 0
         push!(bonds, α ? 3 : 2)

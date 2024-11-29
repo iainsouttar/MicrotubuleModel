@@ -5,30 +5,32 @@ using Accessors
 
 Calculate then aggregate the forces and torques on each bead due to internal interactions.
 """
-@inline function internal_forces_and_torques!(F, F_, torque, lattice, bead_info, flag, N, S)
+@inline function internal_forces_and_torques!(F, F_, torque, lattice, bead_info, flag, N, S,K_r,K_r1, Tk_B)
     Ntot = length(lattice.x)
 
     @inbounds @fastmath @threads for i in 1:Ntot
-        #print(i)
         b = bead_info[i]
         bonds = lattice.x[b.bonds]
         bond_orients = lattice.q[b.bonds]
         torque[:,i], F[:,i], F_[:,:,i] = bending_and_spring_forces(lattice.x[i], lattice.q[i], bonds, b, bond_orients, i)
-        
-        if flag == 0   
-            lattice.rates[i] = 0.001*exp(5*calc_switch_rate(N, lattice.x[i], lattice.q[i], bonds, b, bond_orients, i, N, S)) #+ 0.00001*lattice.kinesin[i,2] + 0.0*!lattice.kinesin[i,2]
+        rate = lattice.kinesin[i,2] ? K_r : K_r1
+
+        #flags: 0 is based on kramers reaction theory
+        #flags: 1 is based on longitudinal spread of clusters
+        #flags: 2 is a constant switching rate
+        #flags: 3 is based on lateral spread of clusters
+        if flag == 0
+            if rate == 0 lattice.rates[i] = 0
+            else lattice.rates[i] = rate*exp(calc_switch_rate(N, lattice.x[i], lattice.q[i], bonds, b, bond_orients, i, N, S)/Tk_B) #+ 0.00001*lattice.kinesin[i,2] + 0.0*!lattice.kinesin[i,2]
+            end
         elseif flag == 1
-            #lattice.rates[i] = 0.1*(0.0001*exp(calc_switch_rate(N, lattice.x[i], lattice.q[i], bonds, b, bond_orients, i)) + 0.01*lattice.kinesin[i,2] + 0.01*(!lattice.kinesin[i,2]) - (0.01*lattice.kinesin[i,2]+ 0.01*(!lattice.kinesin[i,2]))*sum(lattice.kinesin[b.bonds, 2] .== lattice.kinesin[i,2])/length(b.bonds)+ (0.01*lattice.kinesin[i,2]+ 0.01*(!lattice.kinesin[i,2]))*sum(lattice.kinesin[b.bonds, 2] .!= lattice.kinesin[i,2])/length(b.bonds))
             indices = bond_indices(i, Ntot, b.α, N, S)
-            #print(i, indices)
             lattice.rates[i] = 0.01*sum(lattice.kinesin[b.bonds[indices.!=1], 2] .!= lattice.kinesin[i,2]) + 0.0004*lattice.kinesin[i,2] + 0.0001*!lattice.kinesin[i,2]
-            #lattice.rates[i] = 0.1*(0.0001*exp(calc_switch_rate(N, lattice.x[i], lattice.q[i], bonds, b, bond_orients, i)) + 0.01*lattice.kinesin[i,2] + 0.01*(!lattice.kinesin[i,2]) - (0.01*lattice.kinesin[i,2]+ 0.01*(!lattice.kinesin[i,2]))*sum(lattice.kinesin[b.bonds, 2] .== lattice.kinesin[i,2])/length(b.bonds)+ (0.01*lattice.kinesin[i,2]+ 0.01*(!lattice.kinesin[i,2]))*sum(lattice.kinesin[b.bonds, 2] .!= lattice.kinesin[i,2])/length(b.bonds))
         elseif flag == 2
             lattice.rates[i] = 0.1
-
         elseif flag == 3
             indices = bond_indices(i, N, b.α, N, S)
-            lattice.rates[i] = 0.005*sum(lattice.kinesin[b.bonds[indices.==1], 2] .!= lattice.kinesin[i,2]) #+ 0.0001*lattice.kinesin[i,2] + 0.00005*!lattice.kinesin[i,2]
+            lattice.rates[i] = 0.005*sum(lattice.kinesin[b.bonds[indices.==1], 2] .!= lattice.kinesin[i,2])
 
 
         end
@@ -44,46 +46,122 @@ end
 
 
 """Change the constants for a dimer, ie. an alpha+beta"""
+#This needs a bit of a tidy up and should allow for different
+#conformational state changes. In particular there should be at
+#least 4 options, corresponding to the proposed conformational
+#changes described in the report.
 function make_kinesin_like!(lattice, bead_info, N, S, i::Int)
     #we want this to change a dimer, rather than between dimers, this
-    #is what the pos business is doing
+    #is what the pos stuff is doing
     if lattice.kinesin[i,2]
-        lattice.kinesin[i,2] = false
-        b = bead_info[i]
-        pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+        if ~(lattice.kinesin[i,1])
+            lattice.kinesin[i,2] = false
+            b = bead_info[i]
+            pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+
+            b = bead_info[i]
+            pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+            lat_bonds = MicrotubuleSpringModel.lat_indices(i, length(lattice.x),b.α, N, S)
+            bnds = MicrotubuleSpringModel.bond_indices(i, length(lattice.x),b.α, N, S)
+            idxs = findall(x -> x==1, bnds)
+            if lat_bonds[1] != 0
+                #b = Accessors.@set b.bend_consts[idxs[1]] = 1.0
+                #print(bead_info[i].bend_consts)
+    
+                bead_info[i] = Accessors.@set b.directions[idxs[1]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π/13, π/2+0.1819))
+                                
+                #bead_info[i] = Accessors.@set b.lengths[idxs[1]] = 5.21
+            end
+            if lat_bonds[2] != 0
+                c = bead_info[i]
+                c = Accessors.@set c.bend_consts[1+(lat_bonds[1] != 0)] = 1.0
+                #print(bead_info[i].bend_consts)
+    
+                bead_info[i] = Accessors.@set c.directions[idxs[1+(lat_bonds[1] != 0)]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π-π/13, π/2-0.1819))
+                
+
+                #bead_info[i] = Accessors.@set b.directions[idxs[1+(lat_bonds[1] != 0)]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π-π/13, π/2-0.1819))
+                #bead_info[i] = Accessors.@set b.lengths[idxs[1+(lat_bonds[1] != 0)]] = 5.21
+            end
 
 
-        bead_info[i] = Accessors.@set b.lengths[pos] = 4.05
-        #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+            #bead_info[i] = Accessors.@set b.lengths[pos] = 4.05
+            #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
 
-        j = bead_info[i].bonds[pos]
-        b = bead_info[j]
-        lattice.kinesin[j,2] = false
-        pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
-        #print(j,pos)
+            # j = bead_info[i].bonds[pos]
+            # b = bead_info[j]
+            # lattice.kinesin[j,2] = false
+            # pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+            #print(j,pos)
 
 
 
-        bead_info[j] = Accessors.@set b.lengths[pos] = 4.05
+            #bead_info[j] = Accessors.@set b.lengths[pos] = 4.05
+        end
+
+        # if lattice.kinesin[i,1]
+        #     lattice.kinesin[i,1] = false
+        #     lattice.kinesin[i,2] = true
+
+        #     b = bead_info[i]
+        #     pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+    
+    
+        #     bead_info[i] = Accessors.@set b.lengths[pos] = 4.05
+        #     #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+    
+        #     j = bead_info[i].bonds[pos]
+        #     b = bead_info[j]
+        #     lattice.kinesin[j,1] = false
+        #     lattice.kinesin[j,2] = true
+
+        #     pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        #     #print(j,pos)
+    
+    
+    
+        #     bead_info[j] = Accessors.@set b.lengths[pos] = 4.05
+        # end
 
     else
         lattice.kinesin[i,2] = true
         b = bead_info[i]
         pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+        lat_bonds = MicrotubuleSpringModel.lat_indices(i, length(lattice.x),b.α, N, S)
+        bnds = MicrotubuleSpringModel.bond_indices(i, length(lattice.x),b.α, N, S)
+        idxs = findall(x -> x==1, bnds)
+        if lat_bonds[1] != 0
+            #b = Accessors.@set b.bend_consts[idxs[1]] = 10.0
+            #print(bead_info[i].bend_consts)
+
+            bead_info[i] = Accessors.@set b.directions[idxs[1]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π/3, π/2+0.1819))
+            
+
+            #bead_info[i] = Accessors.@set b.lengths[idxs[1]] = 5.21
+        end
+        if lat_bonds[2] != 0
+            c = bead_info[i]
+            #c = Accessors.@set c.bend_consts[idxs[1+(lat_bonds[1] != 0)]] = 10.0
+            #print(bead_info[i].bend_consts)
+
+            bead_info[i] = Accessors.@set c.directions[idxs[1+(lat_bonds[1] != 0)]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π-π/3, π/2-0.1819))
+            #bead_info[i] = Accessors.@set b.lengths[idxs[1+(lat_bonds[1] != 0)]] = 5.21
+        end
 
 
-        bead_info[i] = Accessors.@set b.lengths[pos] = 6.05
-        #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+        ####Now only affects the tubulin it is attached to
+        # bead_info[i] = Accessors.@set b.lengths[pos] = 4.25
+        # #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
 
-        j = bead_info[i].bonds[pos]
-        b = bead_info[j]
-        lattice.kinesin[j,2] = true
-        pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
-        #print(j,pos)
+        # j = bead_info[i].bonds[pos]
+        # b = bead_info[j]
+        # lattice.kinesin[j,2] = true
+        # pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        # #print(j,pos)
 
 
 
-        bead_info[j] = Accessors.@set b.lengths[pos] = 6.05
+        # bead_info[j] = Accessors.@set b.lengths[pos] = 4.25
     end
 
 end
@@ -94,13 +172,11 @@ end
     calc_switch_rate()
 """
 function calc_switch_rate(Ntot,x,q,bonds,b,bond_orients,i, N, S)
-    #E = MVector{7,Float64}(zeros(7))
-    # print(indices, "\n")
     indices = bond_indices(i, Ntot, b.α, N, S)
     engy = bead_energy(x, q, indices, bonds, b, bond_orients)
     lat_engy = engy[1] + engy[4]
     long_engy = engy[2] + engy[3] + engy[5] + engy[6]
-    energy = 5*lat_engy + 5*long_engy 
+    energy = lat_engy + long_engy 
     return energy
 end
 
@@ -173,9 +249,7 @@ end
 Calculate the torque and force due to the bond angle bending between the natural direction `v` and the actual direction `rhat` with length `d`.
 """
 @inline @fastmath function bending_torque_and_force(v, rhat, d, K)
-    # if (norm(rhat - v) < 0.00001)
-    #     return zeros(3), zeros(3)
-    # end
+
 
     rdotv = clamp(dot(rhat,v), -1, 1)
 
@@ -203,15 +277,13 @@ Calculate the torque due to the bond angle torsion between two particles i and j
 
     
 
-    #rdotv = min(1, abs(dot(zi,zj)))
-
     # τ = K*sin(ϕ)*n̂
-    #torque = K_torque*(acos(rdotv))*rhat
     torque = K_torque*(sqrt(1.0-rdotv^2))*rhat
 
 
     #print(norm(torque), "\n")
 
+    #prevent numerical instability
     if (norm(torque)/K_torque < 1e-5)
         return zeros(3)
     end

@@ -7,7 +7,7 @@ else
 end
 
 
-    Nt = 128000
+    Nt = 12800
     stp = 8
     time = collect(0:stp:Nt)
 
@@ -44,7 +44,7 @@ end
     #attach_kinesin!(lattice1, bead_info1, conf.lattice.N, conf.lattice.S, Int(5*13 + 5))
    
     #attach_kinesin!(lattice, bead_info, conf.lattice.N, conf.lattice.S, Int(5*13 + 4))
-    attach_kinesin!(lattice, bead_info, conf.lattice.N, conf.lattice.S, Int(15))
+    #attach_kinesin!(lattice, bead_info, conf.lattice.N, conf.lattice.S, Int(15))
 
     positions = []
 

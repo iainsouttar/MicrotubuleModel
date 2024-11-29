@@ -20,9 +20,87 @@ else
 end
 
 using Accessors
+using Setfield: setproperties
+
 
 """Change the constants for a dimer, ie. an alpha+beta"""
-function attach_kinesin!(lattice, bead_info, N, S, i::Int)
+function attach_kinesin!(lattice, bead_info, N, S, i::Int, angles::Bool)
+    if angles
+        #we want this to change a dimer, rather than between dimers, this
+        #is what the pos business is doing
+        
+        # lattice.kinesin[i,:] = [true, true]
+        # b = bead_info[i]
+        # pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+        # bead_info[i] = Accessors.@set b.bend_consts[pos] = 5.0
+
+        # j = bead_info[i].bonds[pos]
+        # b = bead_info[j]
+        # lattice.kinesin[j,:] = [true, true]
+        # pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        # #print(j,pos)
+        # bead_info[j] = Accessors.@set b.bend_consts[pos] = 5.0
+        b = bead_info[i]
+
+        lat_bonds = MicrotubuleSpringModel.lat_indices(i, length(lattice.x),b.α, N, S)
+        bnds = MicrotubuleSpringModel.bond_indices(i, length(lattice.x),b.α, N, S)
+        idxs = findall(x -> x==1, bnds)
+
+        lattice.kinesin[i,:] = [true, true]
+        b = bead_info[i]
+        pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+        if lat_bonds[1] != 0
+            #b = Accessors.@set b.bend_consts[idxs[1]] = 10.0
+            #b = Accessors.@set b.lengths[idxs[1]] = 5.21
+
+            #print(bead_info[i].bend_consts)
+
+            bead_info[i] = Accessors.@set b.directions[idxs[1]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π/3, π/2+0.169)) #+0.1819))
+            #bead_info[i] = Accessors.@set b.bend_consts[idxs[1]] = 10.0
+            
+            
+            #setproperties(b, (bend_consts[idxs[1]] = 10.0, directions[idxs[1]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π/2, π/2+0.1819))))
+            #bead_info[i] = Accessors.@set b.lengths[idxs[1]] = 5.21
+        end
+        if lat_bonds[2] != 0
+            c = bead_info[i]
+            #b = Accessors.@set b.bend_consts[idxs[1+(lat_bonds[1] != 0)]] = 10.0
+            #c = Accessors.@set c.lengths[idxs[1+(lat_bonds[1] != 0)]] = 5.21
+            
+            
+            
+            #print(bead_info[i].bend_consts)
+
+            bead_info[i] = Accessors.@set c.directions[idxs[1+(lat_bonds[1] != 0)]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π-π/3, π/2-0.169)) #-0.1819))
+            #bead_info[i] = Accessors.@set c.bend_consts[idxs[1+(lat_bonds[1] != 0)]] = 10.0
+            
+            #setproperties(b, (bend_consts[idxs[1+(lat_bonds[1] != 0)]] = 10.0, directions[idxs[1+(lat_bonds[1] != 0)]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π/2, π/2+0.1819))))
+
+            #bead_info[i] = Accessors.@set b.lengths[idxs[1+(lat_bonds[1] != 0)]] = 5.21
+        end
+
+
+        # j = bead_info[i].bonds[pos]
+        # b = bead_info[j]
+        # lattice.kinesin[j,:] = [true, true]
+        # lat_bonds = MicrotubuleSpringModel.lat_indices(j, length(lattice.x),b.α, N, S)
+        # bnds = MicrotubuleSpringModel.bond_indices(j, length(lattice.x),b.α, N, S)
+        # idxs = findall(x -> x==1, bnds)
+        # pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        # #print(j,pos)
+
+        # if lat_bonds[1] != 0
+        #     bead_info[j] = Accessors.@set b.directions[idxs[1]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π/3, π/2+0.1819))
+        #     #bead_info[j] = Accessors.@set b.lengths[idxs[1]] = 5.21
+
+        # end
+        # if lat_bonds[2] != 0
+        #     bead_info[j] = Accessors.@set b.directions[idxs[1+(lat_bonds[1] != 0)]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π-π/3, π/2-0.1819))
+        #     #bead_info[j] = Accessors.@set b.lengths[idxs[1+(lat_bonds[1] != 0)]] = 5.21
+
+        # end
+    else
+    
     #we want this to change a dimer, rather than between dimers, this
     #is what the pos business is doing
     lattice.kinesin[i,:] = [true, true]
@@ -35,7 +113,7 @@ function attach_kinesin!(lattice, bead_info, N, S, i::Int)
     #bead_info[i] = Accessors.@set b.bend_consts[pos] = K_in_kin
     #bead_info[i] = Accessors.@set b.bend_consts[pos] = 0.0
 
-    bead_info[i] = Accessors.@set b.lengths[pos] = l0_kin
+    bead_info[i] = Accessors.@set b.lengths[pos] = 4.25
     #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
 
     j = bead_info[i].bonds[pos]
@@ -47,38 +125,162 @@ function attach_kinesin!(lattice, bead_info, N, S, i::Int)
 
 
     #bead_info[j] = Accessors.@set b.lin_consts[pos] = k_kin
-    bead_info[j] = Accessors.@set b.lengths[pos] = l0_kin
+    bead_info[j] = Accessors.@set b.lengths[pos] = 4.25
     #bead_info[j] = Accessors.@set b.bend_consts[pos] = K_in_kin
 
     #bead_info[j] = Accessors.@set b.bend_consts[pos] = 0.0
+    end
+
 end
+
+
+"""Change the constants for a dimer, ie. an alpha+beta"""
+function remove_kinesin!(lattice, bead_info, N, S, i::Int, angles::Bool, jumps::Bool)
+    if angles
+        #we want this to change a dimer, rather than between dimers, this
+        #is what the pos business is doing
+        lattice.kinesin[i,:] = [false, false]
+        b = bead_info[i]
+        pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+        #bead_info[i] = Accessors.@set b.bend_consts[pos] = 5.0
+        lat_bonds = MicrotubuleSpringModel.lat_indices(i, length(lattice.x),b.α, N, S)
+        bnds = MicrotubuleSpringModel.bond_indices(i, length(lattice.x),b.α, N, S)
+        idxs = findall(x -> x==1, bnds)
+        bead_info[i] = Accessors.@set b.directions[idxs[1]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π/13, π/2+0.1819))
+        c = bead_info[i]
+        bead_info[i] = Accessors.@set c.directions[idxs[1+(lat_bonds[1] != 0)]] = MicrotubuleSpringModel.direc_from_angles(MicrotubuleSpringModel.BondAngle(π-π/13, π/2-0.1819))
+
+
+        # j = bead_info[i].bonds[pos]
+        # b = bead_info[j]
+        # lattice.kinesin[j,:] = [true, true]
+        # pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        # #print(j,pos)
+        # bead_info[j] = Accessors.@set b.bend_consts[pos] = 5.0
+
+    else
+    
+    #we want this to change a dimer, rather than between dimers, this
+    #is what the pos business is doing
+    lattice.kinesin[i,:] = [false, true]
+    b = bead_info[i]
+    pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+
+
+    #bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+    #bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+    #bead_info[i] = Accessors.@set b.bend_consts[pos] = K_in_kin
+    #bead_info[i] = Accessors.@set b.bend_consts[pos] = 0.0
+
+    #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+
+    j = bead_info[i].bonds[pos]
+    b = bead_info[j]
+    lattice.kinesin[j,:] = [false, true]
+
+    if jumps 
+        lattice.kinesin[i,1] = false
+        lattice.kinesin[i,2] = false
+
+        b = bead_info[i]
+        pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+
+
+        #bead_info[i] = Accessors.@set b.lengths[pos] = 4.05
+        #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+
+        j = bead_info[i].bonds[pos]
+        b = bead_info[j]
+        lattice.kinesin[j,1] = false
+        lattice.kinesin[j,2] = false
+
+        pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        #print(j,pos)
+
+
+
+        bead_info[j] = Accessors.@set b.lengths[pos] = 4.05
+
+    end
+
+    #bead_info[j] = Accessors.@set b.bend_consts[pos] = K_in_kin
+
+    #bead_info[j] = Accessors.@set b.bend_consts[pos] = 0.0
+    end
+
+end
+
 
 
 """Change the constants for a dimer, ie. an alpha+beta"""
 function make_kinesin_like!(lattice, bead_info, N, S, i::Int)
     #we want this to change a dimer, rather than between dimers, this
     #is what the pos business is doing
-    lattice.kinesin[i,2] = true
-    b = bead_info[i]
-    pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+    if lattice.kinesin[i,2]
+        lattice.kinesin[i,2] = false
+        b = bead_info[i]
+        pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
 
 
-    bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
-    #bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
-    bead_info[i] = Accessors.@set b.bend_consts[pos] = K_in_kin
-    bead_info[i] = Accessors.@set b.bend_consts[pos] = 0.0
+        bead_info[i] = Accessors.@set b.lengths[pos] = 4.05
+        #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
 
-    bead_info[i] = Accessors.@set b.lengths[pos] = l0_kin
-    #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+        j = bead_info[i].bonds[pos]
+        b = bead_info[j]
+        lattice.kinesin[j,2] = false
+        pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        #print(j,pos)
+
+        bead_info[j] = Accessors.@set b.lengths[pos] = 4.05
+
+    else
+        lattice.kinesin[i,2] = true
+        b = bead_info[i]
+        pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+
+
+        bead_info[i] = Accessors.@set b.lengths[pos] = 4.45
+        #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+
+        j = bead_info[i].bonds[pos]
+        b = bead_info[j]
+        lattice.kinesin[j,2] = true
+        pos = intra_dimer_index(j, length(lattice.x), b.α, N, S)
+        #print(j,pos)
 
 
 
-    bead_info[j] = Accessors.@set b.lin_consts[pos] = k_kin
-    bead_info[j] = Accessors.@set b.lengths[pos] = l0_kin
-    bead_info[j] = Accessors.@set b.bend_consts[pos] = K_in_kin
+        bead_info[j] = Accessors.@set b.lengths[pos] = 4.45
+    end
 
-    bead_info[j] = Accessors.@set b.bend_consts[pos] = 0.0
 end
+
+
+# """Change the constants for a dimer, ie. an alpha+beta"""
+# function make_kinesin_like!(lattice, bead_info, N, S, i::Int)
+#     #we want this to change a dimer, rather than between dimers, this
+#     #is what the pos business is doing
+#     lattice.kinesin[i,2] = true
+#     b = bead_info[i]
+#     pos = intra_dimer_index(i, length(lattice.x), b.α, N, S)
+
+
+#     bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+#     #bead_info[i] = Accessors.@set b.lin_consts[pos] = k_kin
+#     bead_info[i] = Accessors.@set b.bend_consts[pos] = K_in_kin
+#     bead_info[i] = Accessors.@set b.bend_consts[pos] = 0.0
+
+#     bead_info[i] = Accessors.@set b.lengths[pos] = l0_kin
+#     #bead_info[i] = Accessors.@set b.directions[1] = [0.0,0.0,1.0]
+
+
+
+#     bead_info[j] = Accessors.@set b.lin_consts[pos] = k_kin
+#     bead_info[j] = Accessors.@set b.lengths[pos] = l0_kin
+#     bead_info[j] = Accessors.@set b.bend_consts[pos] = K_in_kin
+
+#     bead_info[j] = Accessors.@set b.bend_consts[pos] = 0.0
+# end
 
 """Calculate extensions ready for plotting bonds"""
 function extensions!(pts, ext, positions, info)

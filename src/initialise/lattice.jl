@@ -75,7 +75,7 @@ end
 
 function Lattice(x, q, kinesin, rates)
     N = length(rates)
-    print(N)
+    #print(N)
     return Lattice{N}(x, q, kinesin, rates)
 end
 
@@ -130,7 +130,7 @@ function create_patch(
     alpha = reshape([Bool(z%2==1) for z in vertical_offset], (N_lat,N_long))
     rates = MVector{N_lat*N_long, Float64}(zeros(N_lat*N_long))
     #the 0 in the reshape used to be a 1
-    print(size(kinesin))
+    #print(size(kinesin))
 
     for i in 1:N_long
         for j in 1:N_lat
@@ -193,75 +193,7 @@ Construct a full lattice of beads connected by springs.
 create_lattice(dirs, consts, num_rings, a, δx; S::Int=3, N::Int=13) = create_patch(dirs, consts, N, num_rings, a, δx; S=S, N=N)
 
 
-"""
-    create_dimer(dirs, consts, a::Real)
 
-Construct a full lattice of beads connected by springs.
-
-# Arguments
-- `dirs::Dict`: bond directions for either alpha/beta tubulin
-- `consts::SpringConst`: spring constants
-- `a::Real`: intial separation along protofilament
-
-# Returns
-- `Lattice`: lattice of the two connected beads
-- `Vector{BeadPars}`: bead connections and alpha/beta type
-"""
-function create_dimer(dirs, consts, a::Real)
-    x = [BeadPos(0,0,0), BeadPos(0,0,a)]
-    q = quat_from_axisangle([0,0,1],-π/2)
-    kinesin = [false, false]
-    @unpack k_in, l0_in, K_in = consts
-
-    bead_info = [
-        BeadPars(false, [2],[dirs[false][1]],[k_in],[K_in], [l0_in]),
-        BeadPars(true, [1], [dirs[true][3]], [k_in], [K_in], [l0_in])
-    ]
-
-    return Lattice(x, [q,q], kinesin), bead_info
-end
-
-
-"""
-    create_PF(num_rings::Int, a::Real, δx::Real; S=3, N=13)
-
-Construct a single protofilament of beads connected by springs.
-
-# Arguments
-- `dirs::Dict`: bond directions for either alpha/beta tubulin
-- `consts::SpringConst`: spring constants
-- `num_rings::Int`: number of beads laterally
-- `a::Real`: intial separation along protofilament
-- `δx::Real`: initial separation laterally
-
-# Returns
-- `Lattice`: lattice of connected beads
-- `Vector{BeadPars}`: bead connections and alpha/beta type
-"""
-function create_PF(dirs, consts, n::Int, a::Real)
-    bead_info = Vector{BeadPars}(undef,n)
-
-    x = [BeadPos(0,0,i*a) for i in 0:n-1]
-    q = quat_from_axisangle([0,0,1],-π/2)
-    kinesin = [false for i in 1:n]
-    @unpack k_in, k_long, l0_in, l0_long, K_in, K_long = consts
-
-    bead_info[1] = BeadPars(false, [2],[dirs[false][1]],[k_in],[K_in], [l0_in])
-    for i in 2:n-1
-        α = Bool(i%2==0)
-        bead_info[i] = BeadPars(
-            α, 
-            [i+1,i-1],
-            [dirs[α][1],dirs[α][3]],
-            α ? [k_long, k_in] : [k_in, k_long],
-            α ? [K_long, K_in] : [K_in, K_long],
-            α ? [l0_long, l0_in] : [l0_in, l0_long],
-        )
-    end
-    bead_info[n] = BeadPars(true, [n-1],[dirs[true][3]],[k_in],[K_in], [l0_in])
-
-    return Lattice(x, [q for i in 1:n], kinesin), bead_info
-end
 
 
 """

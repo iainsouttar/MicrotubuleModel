@@ -8,13 +8,13 @@ else
 end
 
 
-Nt = 1_000_000
+Nt = 1_000_00
 stp = 100
 time = collect(0:stp:Nt)
 
 
 
-conf = from_toml(MicrotubuleConfig, "config/eulerMT142.toml")
+conf = from_toml(MicrotubuleConfig, "config/eulerMTkinesinLikestoch.toml")
 #conf = set_bond_angles(conf)
 
 lattice, bead_info = initialise(conf)
@@ -22,12 +22,12 @@ lattice, bead_info = initialise(conf)
 E = zeros((7,length(time)))
 cosangles = zeros(length(time), length(lattice.x))
 lngth = zeros(length(time))
-E[:,1], cosangles[1, :], lngth[1] = total_energy(lattice, bead_info)
+E[:,1], cosangles[1, :], lngth[1] = total_energy(lattice, bead_info, conf.lattice.N, conf.lattice.S)
 
 @showprogress for i in 1:Nt
-    iterate!(lattice, bead_info, conf, conf.iter_pars)
+    iterate!(lattice, bead_info, conf, conf.iter_pars, 0,0.0,0.0,0.0)
     if i % stp == 0
-        E[:,i÷stp+1], cosangles[i÷stp+1, :], lngth[i÷stp+1] = total_energy(lattice, bead_info)
+        E[:,i÷stp+1], cosangles[i÷stp+1, :], lngth[i÷stp+1] = total_energy(lattice, bead_info, conf.lattice.N, conf.lattice.S)
     end
 end
 

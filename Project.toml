@@ -1,6 +1,6 @@
 name = "MicrotubuleSpringModel"
 uuid = "ff898b85-074d-4634-934f-06970d2c0d35"
-authors = ["Jeremy Worsfold <jeremyworsfold2@gmail.com> and contributors"]
+authors = ["Jeremy Worsfold <jeremyworsfold2@gmail.com> and Iain Souttar"]
 version = "0.1.0"
 
 [deps]
@@ -17,6 +17,7 @@ FilePaths = "8fc22ac5-c921-52a6-82fd-178b2807b824"
 FilePathsBase = "48062228-2e41-5def-b9a4-89aafe57970f"
 GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+JLD = "4138dd39-2aa7-5051-a626-17a0bb65d9c8"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"

@@ -21,30 +21,44 @@ function iterate!(
     bead_info::Vector{BeadPars},
     conf::Union{PatchConfig,MicrotubuleConfig},
     iter::StochEulerPars,
-    flag::Int64
+    flag::Int64,
+    K_r::Float64,
+    K_r1::Float64,
+    noise::Float64
 )
     N = isa(conf.lattice,LatticePatchPars) ? conf.lattice.N_lat : conf.lattice.N
     Ntot = length(lattice.x)
     @unpack dt, damp_x, Tk_B = iter
+    Tk_B = noise
     σ_x = sqrt(dt*2*Tk_B*damp_x)
     F = zeros(Float64, (3, Ntot))
     F_ = zeros(Float64, (3, 4, Ntot))
     torque = similar(F)
 
-    updateable = (collect(1:Ntot) .> N)
-    #updateable = ones(Bool, Ntot)
-    #updateable[1] = false
+    #this is deciding boundary conditions. Currently we fix one bead
+    #but can choose to fix whole ring.
+    #updateable = (collect(1:Ntot) .> N)
+    updateable = ones(Bool, Ntot)
+    updateable[1] = false
     
-    Δx, Δq = forward(lattice, bead_info, F, F_, torque, conf,flag)
+    Δx, Δq = forward(lattice, bead_info, F, F_, torque, conf,flag,K_r,K_r1, Tk_B)
     ΔW = σ_x*randn((3,Ntot))
     @inbounds @fastmath @threads for i in 1:Ntot
         lattice.x[i] .+= updateable[i]*(Δx[:,i]*dt .+ ΔW[:,i])
         lattice.q[i] += updateable[i]*Δq[i]*dt
-        if lattice.kinesin[i,1] == false
-            random_num = rand(Exponential(1/lattice.rates[i]))
-            if (random_num <= dt) & (i>2*N)
-                make_kinesin_like!(lattice, bead_info, conf.lattice.N, conf.lattice.S, i)
-                #print("changed ", i)
+        mean_time = 1/lattice.rates[i]
+        if lattice.kinesin[i,1] == false # mean_time != Inf
+            if (mean_time == 0)
+
+                #best to not change conformational state of bottom or top -- otherwise instability
+                if ((i>5*conf.lattice.N) && (i<(length(lattice.x) -5*conf.lattice.N)))
+                    make_kinesin_like!(lattice, bead_info, conf.lattice.N, conf.lattice.S, i)
+                end
+                else
+                random_num = rand(Exponential(mean_time))
+                if ((random_num <= dt) && (i>5*conf.lattice.N) && (i<(length(lattice.x) -5*N)))
+                    make_kinesin_like!(lattice, bead_info, conf.lattice.N, conf.lattice.S, i)
+                end
             end
         end
 
@@ -168,13 +182,16 @@ function forward(
     F_,
     torque::Matrix{Float64},
     conf::Union{PatchConfig, MicrotubuleConfig},
-    flag::Int64
+    flag::Int64,
+    K_r::Float64,
+    K_r1::Float64,
+    Tk_B::Float64
 )
     Ntot = length(lattice.x)
     q = Vector{Quaternions.Quaternion}(undef, Ntot)
     @unpack damp_x, damp_theta, dt = conf.iter_pars
 
-    internal_forces_and_torques!(F, F_, torque, lattice, bead_info,flag, conf.lattice.N, conf.lattice.S)
+    internal_forces_and_torques!(F, F_, torque, lattice, bead_info,flag, conf.lattice.N, conf.lattice.S, K_r, K_r1,Tk_B)
     external_forces!(F, lattice, bead_info, conf.external_force)
     
     @inbounds @fastmath @threads for i in 1:Ntot
